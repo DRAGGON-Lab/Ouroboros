@@ -1,21 +1,76 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "AnnotationFeature.schema.json",
-  "title": "AnnotationFeature",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["id", "type", "start", "end", "strand", "source"],
+  "$defs": {
+    "ActivityType": {
+      "enum": [
+        "measured",
+        "predicted"
+      ],
+      "title": "ActivityType",
+      "type": "string"
+    },
+    "AnnotationSource": {
+      "enum": [
+        "curated",
+        "inferred"
+      ],
+      "title": "AnnotationSource",
+      "type": "string"
+    },
+    "Strand": {
+      "enum": [
+        "forward",
+        "reverse"
+      ],
+      "title": "Strand",
+      "type": "string"
+    }
+  },
   "properties": {
-    "id": { "type": "string" },
-    "type": { "type": "string", "description": "Feature type (gene, CDS, promoter, etc.)" },
-    "start": { "type": "integer", "minimum": 1 },
-    "end": { "type": "integer", "minimum": 1 },
-    "strand": { "type": "string", "enum": ["forward", "reverse"] },
-    "source": {
-      "type": "string",
-      "enum": ["curated", "inferred"],
+    "activity_type": {
+      "$ref": "#/$defs/ActivityType",
+      "description": "Indicates whether activity metadata is measured or predicted"
+    },
+    "annotation_source": {
+      "$ref": "#/$defs/AnnotationSource",
       "description": "Distinguishes curated annotations from inferred annotations"
     },
-    "label": { "type": "string" }
-  }
+    "end": {
+      "minimum": 1,
+      "title": "End",
+      "type": "integer"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "start": {
+      "minimum": 1,
+      "title": "Start",
+      "type": "integer"
+    },
+    "strand": {
+      "$ref": "#/$defs/Strand"
+    },
+    "type": {
+      "description": "Feature type (gene, CDS, promoter, etc.)",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "start",
+    "end",
+    "strand",
+    "label",
+    "annotation_source",
+    "activity_type"
+  ],
+  "title": "AnnotationFeature",
+  "type": "object"
 }
