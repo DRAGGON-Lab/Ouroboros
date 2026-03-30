@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AnnotationListResponse.schema.json",
+  "title": "AnnotationListResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["annotations"],
+  "properties": {
+    "annotations": {
+      "type": "array",
+      "items": { "$ref": "./AnnotationFeature.schema.json" }
+    },
+    "next_cursor": {
+      "type": ["string", "null"]
+    }
+  }
+}

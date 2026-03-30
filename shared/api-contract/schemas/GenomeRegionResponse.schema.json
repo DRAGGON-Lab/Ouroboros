@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "GenomeRegionResponse.schema.json",
+  "title": "GenomeRegionResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["start", "end", "sequence", "annotations"],
+  "properties": {
+    "start": { "type": "integer", "minimum": 1 },
+    "end": { "type": "integer", "minimum": 1 },
+    "sequence": { "type": "string", "pattern": "^[ACGTNacgtn]+$" },
+    "activity": {
+      "type": "object",
+      "description": "Measured or predicted activity metadata and values",
+      "additionalProperties": false,
+      "required": ["kind", "values"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["measured", "predicted"] },
+        "values": {
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "annotations": {
+      "type": "array",
+      "items": { "$ref": "./AnnotationFeature.schema.json" }
+    }
+  }
+}
