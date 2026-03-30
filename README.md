@@ -140,3 +140,19 @@ Ouroboros is currently in early development. The architecture, interface, and wo
 
 - *Escherichia coli* str. K-12 substr. MG1655
 - GenBank accession: [`U00096.3`](https://www.ncbi.nlm.nih.gov/nuccore/U00096.3)
+
+## Repository layout
+
+- `frontend/`: Next.js + TypeScript web app (App Router), including `/viewer`.
+- `backend/`: FastAPI service with versioned routes under `app/api/v1/`.
+- `shared/`: API contracts (OpenAPI + JSON Schemas).
+- `data/`: raw and processed datasets.
+- `docs/`: project documentation.
+- `scripts/`: helper scripts.
+
+## Development commands
+
+- `make frontend-dev`
+- `make backend-dev`
+- `make lint`
+- `make test`

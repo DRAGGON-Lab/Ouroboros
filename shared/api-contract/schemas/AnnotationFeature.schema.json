@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AnnotationFeature.schema.json",
+  "title": "AnnotationFeature",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "start", "end", "strand", "source"],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string", "description": "Feature type (gene, CDS, promoter, etc.)" },
+    "start": { "type": "integer", "minimum": 1 },
+    "end": { "type": "integer", "minimum": 1 },
+    "strand": { "type": "string", "enum": ["forward", "reverse"] },
+    "source": {
+      "type": "string",
+      "enum": ["curated", "inferred"],
+      "description": "Distinguishes curated annotations from inferred annotations"
+    },
+    "label": { "type": "string" }
+  }
+}
