@@ -141,18 +141,112 @@ Ouroboros is currently in early development. The architecture, interface, and wo
 - *Escherichia coli* str. K-12 substr. MG1655
 - GenBank accession: [`U00096.3`](https://www.ncbi.nlm.nih.gov/nuccore/U00096.3)
 
-## Repository layout
+## Repository Layout
 
-- `frontend/`: Next.js + TypeScript web app (App Router), including `/viewer`.
-- `backend/`: FastAPI service with versioned routes under `app/api/v1/`.
-- `shared/`: API contracts (OpenAPI + JSON Schemas).
-- `data/`: raw and processed datasets.
-- `docs/`: project documentation.
-- `scripts/`: helper scripts.
+The repository follows this scaffold:
 
-## Development commands
+```text
+Ouroboros/
+├─ frontend/                      # Next.js + TypeScript viewer UI
+│  ├─ app/
+│  ├─ components/
+│  ├─ features/
+│  ├─ shared/types/ts/
+│  └─ tests/ + __tests__/
+├─ backend/                       # FastAPI application + schema/export tooling
+│  ├─ app/
+│  │  ├─ api/v1/
+│  │  ├─ core/
+│  │  └─ schemas/
+│  ├─ scripts/export_api_contract.py
+│  └─ tests/
+├─ shared/api-contract/           # Generated OpenAPI + JSON Schema artifacts
+│  ├─ openapi.json
+│  └─ schemas/
+├─ data/
+│  └─ raw/
+│     └─ U00096.gb                # MG1655 GenBank source (accession U00096.3)
+├─ docs/
+├─ Makefile
+├─ ARCHITECTURE.md
+└─ PRODUCT.md
+```
 
-- `make frontend-dev`
-- `make backend-dev`
-- `make lint`
-- `make test`
+## Quick Start
+
+### 1) Install dependencies
+
+```bash
+make install
+```
+
+### 2) Run the frontend (terminal A)
+
+```bash
+make frontend-dev
+```
+
+### 3) Run the backend (terminal B)
+
+```bash
+make backend-dev
+```
+
+### Optional quality checks
+
+```bash
+make lint
+make test
+```
+
+## Shared Contract Workflow
+
+Ouroboros keeps backend API definitions and frontend-consumable schema artifacts synchronized via generated files in `shared/api-contract/`.
+
+1. **Define or update backend schemas/routes** in `backend/app/schemas/` and `backend/app/api/v1/routes.py`.
+2. **Generate contract artifacts** from the FastAPI app and Pydantic models:
+   ```bash
+   cd backend
+   python scripts/export_api_contract.py
+   ```
+3. **Review generated outputs**:
+   - `shared/api-contract/openapi.json`
+   - `shared/api-contract/schemas/*.schema.json`
+4. **Consume contract updates in frontend types/adapters** (for example, `frontend/shared/types/ts/` and viewer API mapping code).
+
+This workflow keeps API behavior, serialized schema artifacts, and UI integration aligned during iteration.
+
+## Data Placement
+
+Reference organism data is stored at:
+
+- `data/raw/U00096.gb` for *E. coli* MG1655 (GenBank accession `U00096.3`).
+
+Treat this file as the canonical raw genome source for ingestion/parsing steps.
+
+## Milestone Status
+
+### M1 (current baseline)
+
+| Area | M1 done criteria | Current status |
+| --- | --- | --- |
+| Repo scaffolding | Frontend, backend, shared contracts, docs, data directories established | ✅ Done |
+| Backend API baseline | FastAPI app exposes health + region/annotation endpoints with typed response models | ✅ Done |
+| Shared contracts | OpenAPI + JSON schema export script produces artifacts under `shared/api-contract/` | ✅ Done |
+| Frontend viewer baseline | Viewer route and API adapter exist with centered-window coordinate behavior | ✅ Done |
+| Reference data wiring | MG1655 source file placed under `data/raw/U00096.gb` | ✅ Done |
+| End-to-end biological outputs | Real GenBank parsing + full activity/feature integration | 🟡 Intentionally stubbed (mock/placeholder outputs in M1) |
+| Search/generate workflows | Production sequence search, activity retrieval, and generation UX | 🟡 Intentionally stubbed for post-M1 milestones |
+
+## Scientific semantics
+
+To keep interpretation scientifically explicit:
+
+- **Curated vs inferred annotations**
+  - **Curated** annotations come directly from trusted source records/manual curation.
+  - **Inferred** annotations are algorithmic or threshold-derived candidates and should be labeled as such.
+- **Measured vs predicted activity**
+  - **Measured** activity comes from experimental observations.
+  - **Predicted** activity comes from model output and must not be presented as experimentally validated.
+
+UI labels and API fields should preserve these distinctions at all times.
