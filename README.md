@@ -174,7 +174,6 @@ Ouroboros/
 
 ## Quick Start
 
-<<<<<<< codex/add-documentation-sections-and-details-4zx9rf
 ### 1) Create and activate a Conda environment
 
 ```bash
@@ -188,35 +187,23 @@ What this does:
 - `conda activate ouroboros` switches your shell to that environment so backend dependencies install into the project-specific runtime.
 
 ### 2) Install dependencies
-=======
-### 1) Install dependencies
->>>>>>> main
 
 ```bash
 make install
 ```
 
-<<<<<<< codex/add-documentation-sections-and-details-4zx9rf
 ### 3) Run the frontend (terminal A)
-=======
-### 2) Run the frontend (terminal A)
->>>>>>> main
 
 ```bash
 make frontend-dev
 ```
 
-<<<<<<< codex/add-documentation-sections-and-details-4zx9rf
 ### 4) Run the backend (terminal B)
-=======
-### 3) Run the backend (terminal B)
->>>>>>> main
 
 ```bash
 make backend-dev
 ```
 
-<<<<<<< codex/add-documentation-sections-and-details-4zx9rf
 ### Required language/tool versions
 
 | Tool | Version used by repository |
@@ -224,8 +211,6 @@ make backend-dev
 | Python | `>=3.11` |
 | TypeScript | `5.8.2` |
 
-=======
->>>>>>> main
 ### Optional quality checks
 
 ```bash
