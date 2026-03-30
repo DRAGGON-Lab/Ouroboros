@@ -1,11 +1,7 @@
 import React from "react";
+
+import GenomeViewerShell from "../../components/viewer/GenomeViewerShell";
+
 export default function ViewerPage() {
-  return (
-    <main>
-      <section aria-label="genome-viewer">
-        <h1>Genome Viewer</h1>
-        <p>Viewer scaffold for sequence-centered exploration.</p>
-      </section>
-    </main>
-  );
+  return <GenomeViewerShell />;
 }
