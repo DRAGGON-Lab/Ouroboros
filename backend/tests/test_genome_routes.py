@@ -59,3 +59,17 @@ def test_get_annotations_accession_mismatch_returns_404() -> None:
 
     assert response.status_code == 404
     assert "Unsupported accession" in response.json()["detail"]
+
+
+def test_openapi_declares_400_and_404_for_mock_validation_errors() -> None:
+    openapi = client.get("/openapi.json").json()
+    paths = openapi["paths"]
+
+    genome_responses = paths["/api/v1/genome/region"]["get"]["responses"]
+    annotations_responses = paths["/api/v1/annotations"]["get"]["responses"]
+
+    for responses in (genome_responses, annotations_responses):
+        assert "400" in responses
+        assert responses["400"]["description"] == "Invalid coordinate range."
+        assert "404" in responses
+        assert responses["404"]["description"] == "Unsupported accession."

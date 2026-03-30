@@ -93,7 +93,15 @@ def _annotations_in_range(start: int, end: int) -> list[AnnotationFeature]:
     ]
 
 
-@router.get("/genome/region", response_model=GenomeRegionResponse, tags=["genome"])
+@router.get(
+    "/genome/region",
+    response_model=GenomeRegionResponse,
+    tags=["genome"],
+    responses={
+        400: {"description": "Invalid coordinate range."},
+        404: {"description": "Unsupported accession."},
+    },
+)
 def get_genome_region(
     accession: str = Query(..., description="Genome accession; mock API supports U00096.3"),
     start: int = Query(..., ge=1, description="1-based inclusive start coordinate"),
@@ -113,7 +121,15 @@ def get_genome_region(
     )
 
 
-@router.get("/annotations", response_model=AnnotationListResponse, tags=["annotations"])
+@router.get(
+    "/annotations",
+    response_model=AnnotationListResponse,
+    tags=["annotations"],
+    responses={
+        400: {"description": "Invalid coordinate range."},
+        404: {"description": "Unsupported accession."},
+    },
+)
 def get_annotations(
     accession: str = Query(..., description="Genome accession; mock API supports U00096.3"),
     start: int = Query(..., ge=1, description="1-based inclusive start coordinate"),
