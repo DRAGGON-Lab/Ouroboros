@@ -1,17 +1,109 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "AnnotationListResponse.schema.json",
-  "title": "AnnotationListResponse",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["annotations"],
-  "properties": {
-    "annotations": {
-      "type": "array",
-      "items": { "$ref": "./AnnotationFeature.schema.json" }
+  "$defs": {
+    "ActivityType": {
+      "enum": [
+        "measured",
+        "predicted"
+      ],
+      "title": "ActivityType",
+      "type": "string"
     },
-    "next_cursor": {
-      "type": ["string", "null"]
+    "AnnotationFeature": {
+      "properties": {
+        "activity_type": {
+          "$ref": "#/$defs/ActivityType",
+          "description": "Indicates whether activity metadata is measured or predicted"
+        },
+        "annotation_source": {
+          "$ref": "#/$defs/AnnotationSource",
+          "description": "Distinguishes curated annotations from inferred annotations"
+        },
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        },
+        "strand": {
+          "$ref": "#/$defs/Strand"
+        },
+        "type": {
+          "description": "Feature type (gene, CDS, promoter, etc.)",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "start",
+        "end",
+        "strand",
+        "label",
+        "annotation_source",
+        "activity_type"
+      ],
+      "title": "AnnotationFeature",
+      "type": "object"
+    },
+    "AnnotationSource": {
+      "enum": [
+        "curated",
+        "inferred"
+      ],
+      "title": "AnnotationSource",
+      "type": "string"
+    },
+    "Strand": {
+      "enum": [
+        "forward",
+        "reverse"
+      ],
+      "title": "Strand",
+      "type": "string"
     }
-  }
+  },
+  "properties": {
+    "accession": {
+      "title": "Accession",
+      "type": "string"
+    },
+    "annotations": {
+      "items": {
+        "$ref": "#/$defs/AnnotationFeature"
+      },
+      "title": "Annotations",
+      "type": "array"
+    },
+    "end": {
+      "minimum": 1,
+      "title": "End",
+      "type": "integer"
+    },
+    "start": {
+      "minimum": 1,
+      "title": "Start",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "accession",
+    "start",
+    "end",
+    "annotations"
+  ],
+  "title": "AnnotationListResponse",
+  "type": "object"
 }

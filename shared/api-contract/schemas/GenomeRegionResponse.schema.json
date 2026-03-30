@@ -1,30 +1,123 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "GenomeRegionResponse.schema.json",
-  "title": "GenomeRegionResponse",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["start", "end", "sequence", "annotations"],
-  "properties": {
-    "start": { "type": "integer", "minimum": 1 },
-    "end": { "type": "integer", "minimum": 1 },
-    "sequence": { "type": "string", "pattern": "^[ACGTNacgtn]+$" },
-    "activity": {
-      "type": "object",
-      "description": "Measured or predicted activity metadata and values",
-      "additionalProperties": false,
-      "required": ["kind", "values"],
+  "$defs": {
+    "ActivityType": {
+      "enum": [
+        "measured",
+        "predicted"
+      ],
+      "title": "ActivityType",
+      "type": "string"
+    },
+    "AnnotationFeature": {
       "properties": {
-        "kind": { "type": "string", "enum": ["measured", "predicted"] },
-        "values": {
-          "type": "array",
-          "items": { "type": "number" }
+        "activity_type": {
+          "$ref": "#/$defs/ActivityType",
+          "description": "Indicates whether activity metadata is measured or predicted"
+        },
+        "annotation_source": {
+          "$ref": "#/$defs/AnnotationSource",
+          "description": "Distinguishes curated annotations from inferred annotations"
+        },
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        },
+        "strand": {
+          "$ref": "#/$defs/Strand"
+        },
+        "type": {
+          "description": "Feature type (gene, CDS, promoter, etc.)",
+          "title": "Type",
+          "type": "string"
         }
-      }
+      },
+      "required": [
+        "id",
+        "type",
+        "start",
+        "end",
+        "strand",
+        "label",
+        "annotation_source",
+        "activity_type"
+      ],
+      "title": "AnnotationFeature",
+      "type": "object"
+    },
+    "AnnotationSource": {
+      "enum": [
+        "curated",
+        "inferred"
+      ],
+      "title": "AnnotationSource",
+      "type": "string"
+    },
+    "Strand": {
+      "enum": [
+        "forward",
+        "reverse"
+      ],
+      "title": "Strand",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "accession": {
+      "title": "Accession",
+      "type": "string"
+    },
+    "activity_type": {
+      "$ref": "#/$defs/ActivityType"
     },
     "annotations": {
-      "type": "array",
-      "items": { "$ref": "./AnnotationFeature.schema.json" }
+      "items": {
+        "$ref": "#/$defs/AnnotationFeature"
+      },
+      "title": "Annotations",
+      "type": "array"
+    },
+    "end": {
+      "minimum": 1,
+      "title": "End",
+      "type": "integer"
+    },
+    "sequence": {
+      "pattern": "^[ACGTNacgtn]+$",
+      "title": "Sequence",
+      "type": "string"
+    },
+    "start": {
+      "minimum": 1,
+      "title": "Start",
+      "type": "integer"
+    },
+    "strand": {
+      "$ref": "#/$defs/Strand"
     }
-  }
+  },
+  "required": [
+    "accession",
+    "start",
+    "end",
+    "strand",
+    "sequence",
+    "activity_type",
+    "annotations"
+  ],
+  "title": "GenomeRegionResponse",
+  "type": "object"
 }

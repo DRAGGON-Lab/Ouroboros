@@ -1,56 +1,395 @@
 {
-  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "ActivityType": {
+        "enum": [
+          "measured",
+          "predicted"
+        ],
+        "title": "ActivityType",
+        "type": "string"
+      },
+      "AnnotationFeature": {
+        "properties": {
+          "activity_type": {
+            "$ref": "#/components/schemas/ActivityType",
+            "description": "Indicates whether activity metadata is measured or predicted"
+          },
+          "annotation_source": {
+            "$ref": "#/components/schemas/AnnotationSource",
+            "description": "Distinguishes curated annotations from inferred annotations"
+          },
+          "end": {
+            "minimum": 1.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 1.0,
+            "title": "Start",
+            "type": "integer"
+          },
+          "strand": {
+            "$ref": "#/components/schemas/Strand"
+          },
+          "type": {
+            "description": "Feature type (gene, CDS, promoter, etc.)",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "start",
+          "end",
+          "strand",
+          "label",
+          "annotation_source",
+          "activity_type"
+        ],
+        "title": "AnnotationFeature",
+        "type": "object"
+      },
+      "AnnotationListResponse": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "annotations": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationFeature"
+            },
+            "title": "Annotations",
+            "type": "array"
+          },
+          "end": {
+            "minimum": 1.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "start": {
+            "minimum": 1.0,
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "accession",
+          "start",
+          "end",
+          "annotations"
+        ],
+        "title": "AnnotationListResponse",
+        "type": "object"
+      },
+      "AnnotationSource": {
+        "enum": [
+          "curated",
+          "inferred"
+        ],
+        "title": "AnnotationSource",
+        "type": "string"
+      },
+      "GenomeRegionResponse": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "activity_type": {
+            "$ref": "#/components/schemas/ActivityType"
+          },
+          "annotations": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationFeature"
+            },
+            "title": "Annotations",
+            "type": "array"
+          },
+          "end": {
+            "minimum": 1.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "sequence": {
+            "pattern": "^[ACGTNacgtn]+$",
+            "title": "Sequence",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 1.0,
+            "title": "Start",
+            "type": "integer"
+          },
+          "strand": {
+            "$ref": "#/components/schemas/Strand"
+          }
+        },
+        "required": [
+          "accession",
+          "start",
+          "end",
+          "strand",
+          "sequence",
+          "activity_type",
+          "annotations"
+        ],
+        "title": "GenomeRegionResponse",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Strand": {
+        "enum": [
+          "forward",
+          "reverse"
+        ],
+        "title": "Strand",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
   "info": {
     "title": "Ouroboros API",
     "version": "0.1.0"
   },
+  "openapi": "3.1.0",
   "paths": {
-    "/api/v1/regions/{start}/{end}": {
+    "/": {
       "get": {
-        "summary": "Retrieve a genome region",
-        "parameters": [
-          {
-            "name": "start",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer", "minimum": 1 }
-          },
-          {
-            "name": "end",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer", "minimum": 1 }
-          }
-        ],
+        "operationId": "root__get",
         "responses": {
           "200": {
-            "description": "Genome region response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./schemas/GenomeRegionResponse.schema.json"
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Root  Get",
+                  "type": "object"
                 }
               }
-            }
+            },
+            "description": "Successful Response"
           }
-        }
+        },
+        "summary": "Root"
       }
     },
     "/api/v1/annotations": {
       "get": {
-        "summary": "List annotation features",
+        "operationId": "get_annotations_api_v1_annotations_get",
+        "parameters": [
+          {
+            "description": "Genome accession; mock API supports U00096.3",
+            "in": "query",
+            "name": "accession",
+            "required": true,
+            "schema": {
+              "description": "Genome accession; mock API supports U00096.3",
+              "title": "Accession",
+              "type": "string"
+            }
+          },
+          {
+            "description": "1-based inclusive start coordinate",
+            "in": "query",
+            "name": "start",
+            "required": true,
+            "schema": {
+              "description": "1-based inclusive start coordinate",
+              "minimum": 1,
+              "title": "Start",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "1-based inclusive end coordinate",
+            "in": "query",
+            "name": "end",
+            "required": true,
+            "schema": {
+              "description": "1-based inclusive end coordinate",
+              "minimum": 1,
+              "title": "End",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Annotation list response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "./schemas/AnnotationListResponse.schema.json"
+                  "$ref": "#/components/schemas/AnnotationListResponse"
                 }
               }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Annotations",
+        "tags": [
+          "annotations"
+        ]
+      }
+    },
+    "/api/v1/genome/region": {
+      "get": {
+        "operationId": "get_genome_region_api_v1_genome_region_get",
+        "parameters": [
+          {
+            "description": "Genome accession; mock API supports U00096.3",
+            "in": "query",
+            "name": "accession",
+            "required": true,
+            "schema": {
+              "description": "Genome accession; mock API supports U00096.3",
+              "title": "Accession",
+              "type": "string"
+            }
+          },
+          {
+            "description": "1-based inclusive start coordinate",
+            "in": "query",
+            "name": "start",
+            "required": true,
+            "schema": {
+              "description": "1-based inclusive start coordinate",
+              "minimum": 1,
+              "title": "Start",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "1-based inclusive end coordinate",
+            "in": "query",
+            "name": "end",
+            "required": true,
+            "schema": {
+              "description": "1-based inclusive end coordinate",
+              "minimum": 1,
+              "title": "End",
+              "type": "integer"
             }
           }
-        }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenomeRegionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Genome Region",
+        "tags": [
+          "genome"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Check Api V1 Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Check",
+        "tags": [
+          "health"
+        ]
       }
     }
   }
