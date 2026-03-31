@@ -14,8 +14,91 @@ body {
   color: #101828;
 }
 
-main {
-  display: grid;
-  place-items: center;
+.viewerPageMain {
   min-height: 100vh;
+  width: 100%;
+  padding: 1rem;
+}
+
+.viewerShell {
+  min-height: calc(100vh - 2rem);
+  background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
+  border-radius: 16px;
+  border: 1px solid #d0d5dd;
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
+}
+
+.viewerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.viewerHeader h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.viewerHeader p {
+  margin: 0.25rem 0 0;
+}
+
+.viewerControls {
+  text-align: right;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.viewerControls button {
+  margin-left: 0.5rem;
+}
+
+.viewerCanvas {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  min-height: 0;
+}
+
+.viewerCircular {
+  align-self: start;
+  justify-self: start;
+}
+
+.viewerLinearRegion {
+  align-self: end;
+  justify-self: center;
+  width: min(100%, 94vw);
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+.viewerLinearScroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .viewerHeader {
+    flex-direction: column;
+  }
+
+  .viewerControls {
+    text-align: left;
+  }
+
+  .viewerControls button {
+    margin: 0.25rem 0.5rem 0 0;
+  }
+
+  .viewerCircular {
+    justify-self: center;
+  }
 }
