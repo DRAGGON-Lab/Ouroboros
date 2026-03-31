@@ -1,5 +1,7 @@
 # Ouroboros
 
+<img src="https://github.com/DRAGGON-Lab/Ouroboros/blob/main/docs/Ouroboros_logotype.png" alt="Ouroboros_logotype" width="400"/>
+
 Ouroboros is a software platform for genome exploration, visualization, and sequence-driven design. It begins with a reference genome from GenBank and presents it through a clean, sequence-centric interface that integrates genomic annotations, promoter activity measurements, search, and future generative design workflows.
 
 The first organism supported in Ouroboros is *Escherichia coli* K-12 MG1655, using the GenBank record [`U00096.3`](https://www.ncbi.nlm.nih.gov/nuccore/U00096.3).
