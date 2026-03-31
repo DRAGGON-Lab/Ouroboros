@@ -1,6 +1,9 @@
 # Ouroboros
 
+
+<p align="center">
 <img src="https://github.com/DRAGGON-Lab/Ouroboros/blob/main/docs/Ouroboros_logotype.png" alt="Ouroboros_logotype" width="400"/>
+</p>
 
 Ouroboros is a software platform for genome exploration, visualization, and sequence-driven design. It begins with a reference genome from GenBank and presents it through a clean, sequence-centric interface that integrates genomic annotations, promoter activity measurements, search, and future generative design workflows.
 
