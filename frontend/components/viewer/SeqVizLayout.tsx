@@ -12,7 +12,7 @@ interface SeqVizLayoutProps {
   onShiftCenter: (offset: number) => void;
 }
 
-const DNA_PATTERN = "ATGCCGTA";
+const DNA_PATTERN = "ACGTGCCGTA";
 
 const buildRegionSequence = (payload: ViewerPayload | null): string => {
   if (!payload) {
