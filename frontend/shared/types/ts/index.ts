@@ -24,6 +24,7 @@ export interface FeatureBlock {
 
 export interface ViewerPayload {
   accession: string;
+  genomeLength: number;
   region: ViewerRegion;
   nucleotides: NucleotideBlock[];
   features: FeatureBlock[];

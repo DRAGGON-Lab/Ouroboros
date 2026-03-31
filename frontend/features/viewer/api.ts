@@ -76,6 +76,7 @@ export const loadViewerPayload = async (
 
   return Promise.resolve({
     accession,
+    genomeLength: GENOME_LENGTH,
     region,
     nucleotides: buildNucleotideBlocks(region),
     features: buildFeatureBlocks(region)
