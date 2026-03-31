@@ -14,17 +14,28 @@ interface SeqVizLayoutProps {
 
 const DNA_PATTERN = "ACGTGCCGTA";
 
+export const calculateRegionSpan = (payload: ViewerPayload): number => {
+  const { start, end, center } = payload.region;
+  const genomeLength = payload.genomeLength;
+
+  const distanceFromStartToCenter = (center - start + genomeLength) % genomeLength;
+  const distanceFromCenterToEnd = (end - center + genomeLength) % genomeLength;
+  const regionSpan = (end - start + genomeLength) % genomeLength;
+  const span = Math.max(
+    400,
+    regionSpan + 1,
+    (distanceFromStartToCenter + distanceFromCenterToEnd) + 1
+  );
+
+  return Math.min(genomeLength, span);
+};
+
 const buildRegionSequence = (payload: ViewerPayload | null): string => {
   if (!payload) {
     return DNA_PATTERN.repeat(80);
   }
 
-  const span = Math.max(
-    400,
-    Math.abs(payload.region.end - payload.region.start) + 1,
-    Math.abs(payload.region.center - payload.region.start) * 2 + 1
-  );
-
+  const span = calculateRegionSpan(payload);
   return DNA_PATTERN.repeat(Math.ceil(span / DNA_PATTERN.length)).slice(0, span);
 };
 
