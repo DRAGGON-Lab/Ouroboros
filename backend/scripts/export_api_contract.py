@@ -2,7 +2,12 @@ import json
 from pathlib import Path
 
 from app.main import app
-from app.schemas import AnnotationFeature, AnnotationListResponse, GenomeRegionResponse
+from app.schemas import (
+    AnnotationFeature,
+    AnnotationListResponse,
+    GenomeRegionResponse,
+    ViewerWindowResponse,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_DIR = ROOT / "shared" / "api-contract"
@@ -27,6 +32,10 @@ def main() -> None:
     _write_json(
         SCHEMAS_DIR / "AnnotationListResponse.schema.json",
         AnnotationListResponse.model_json_schema(),
+    )
+    _write_json(
+        SCHEMAS_DIR / "ViewerWindowResponse.schema.json",
+        ViewerWindowResponse.model_json_schema(),
     )
 
 

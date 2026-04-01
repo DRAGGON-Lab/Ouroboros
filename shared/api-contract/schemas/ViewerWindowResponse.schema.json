@@ -1,0 +1,101 @@
+{
+  "properties": {
+    "bases": {
+      "pattern": "^[ACGT-]+$",
+      "title": "Bases",
+      "type": "string"
+    },
+    "bufferLeft": {
+      "minimum": 0,
+      "title": "Bufferleft",
+      "type": "integer"
+    },
+    "bufferRight": {
+      "minimum": 0,
+      "title": "Bufferright",
+      "type": "integer"
+    },
+    "fetchEnd": {
+      "minimum": 1,
+      "title": "Fetchend",
+      "type": "integer"
+    },
+    "fetchStart": {
+      "minimum": 1,
+      "title": "Fetchstart",
+      "type": "integer"
+    },
+    "forwardActivity": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Forwardactivity",
+      "type": "array"
+    },
+    "forwardFn": {
+      "pattern": "^[PC-]+$",
+      "title": "Forwardfn",
+      "type": "string"
+    },
+    "genomeLength": {
+      "minimum": 1,
+      "title": "Genomelength",
+      "type": "integer"
+    },
+    "requestedCenter": {
+      "minimum": 1,
+      "title": "Requestedcenter",
+      "type": "integer"
+    },
+    "reverseActivity": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Reverseactivity",
+      "type": "array"
+    },
+    "reverseFn": {
+      "pattern": "^[PC-]+$",
+      "title": "Reversefn",
+      "type": "string"
+    },
+    "sequenceId": {
+      "title": "Sequenceid",
+      "type": "string"
+    },
+    "visibleEnd": {
+      "minimum": 1,
+      "title": "Visibleend",
+      "type": "integer"
+    },
+    "visibleLength": {
+      "minimum": 1,
+      "title": "Visiblelength",
+      "type": "integer"
+    },
+    "visibleStart": {
+      "minimum": 1,
+      "title": "Visiblestart",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "sequenceId",
+    "genomeLength",
+    "requestedCenter",
+    "visibleStart",
+    "visibleEnd",
+    "fetchStart",
+    "fetchEnd",
+    "visibleLength",
+    "bufferLeft",
+    "bufferRight",
+    "bases",
+    "forwardFn",
+    "reverseFn",
+    "forwardActivity",
+    "reverseActivity"
+  ],
+  "title": "ViewerWindowResponse",
+  "type": "object"
+}

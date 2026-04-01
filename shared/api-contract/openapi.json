@@ -200,6 +200,107 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "ViewerWindowResponse": {
+        "properties": {
+          "bases": {
+            "pattern": "^[ACGT-]+$",
+            "title": "Bases",
+            "type": "string"
+          },
+          "bufferLeft": {
+            "minimum": 0.0,
+            "title": "Bufferleft",
+            "type": "integer"
+          },
+          "bufferRight": {
+            "minimum": 0.0,
+            "title": "Bufferright",
+            "type": "integer"
+          },
+          "fetchEnd": {
+            "minimum": 1.0,
+            "title": "Fetchend",
+            "type": "integer"
+          },
+          "fetchStart": {
+            "minimum": 1.0,
+            "title": "Fetchstart",
+            "type": "integer"
+          },
+          "forwardActivity": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Forwardactivity",
+            "type": "array"
+          },
+          "forwardFn": {
+            "pattern": "^[PC-]+$",
+            "title": "Forwardfn",
+            "type": "string"
+          },
+          "genomeLength": {
+            "minimum": 1.0,
+            "title": "Genomelength",
+            "type": "integer"
+          },
+          "requestedCenter": {
+            "minimum": 1.0,
+            "title": "Requestedcenter",
+            "type": "integer"
+          },
+          "reverseActivity": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Reverseactivity",
+            "type": "array"
+          },
+          "reverseFn": {
+            "pattern": "^[PC-]+$",
+            "title": "Reversefn",
+            "type": "string"
+          },
+          "sequenceId": {
+            "title": "Sequenceid",
+            "type": "string"
+          },
+          "visibleEnd": {
+            "minimum": 1.0,
+            "title": "Visibleend",
+            "type": "integer"
+          },
+          "visibleLength": {
+            "minimum": 1.0,
+            "title": "Visiblelength",
+            "type": "integer"
+          },
+          "visibleStart": {
+            "minimum": 1.0,
+            "title": "Visiblestart",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sequenceId",
+          "genomeLength",
+          "requestedCenter",
+          "visibleStart",
+          "visibleEnd",
+          "fetchStart",
+          "fetchEnd",
+          "visibleLength",
+          "bufferLeft",
+          "bufferRight",
+          "bases",
+          "forwardFn",
+          "reverseFn",
+          "forwardActivity",
+          "reverseActivity"
+        ],
+        "title": "ViewerWindowResponse",
+        "type": "object"
       }
     }
   },
@@ -282,6 +383,12 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "description": "Invalid coordinate range."
+          },
+          "404": {
+            "description": "Unsupported accession."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -350,6 +457,12 @@
             },
             "description": "Successful Response"
           },
+          "400": {
+            "description": "Invalid coordinate range."
+          },
+          "404": {
+            "description": "Unsupported accession."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -389,6 +502,65 @@
         "summary": "Health Check",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/viewer/window": {
+      "get": {
+        "operationId": "get_viewer_window_api_v1_viewer_window_get",
+        "parameters": [
+          {
+            "description": "Genome accession; mock API supports U00096.3",
+            "in": "query",
+            "name": "accession",
+            "required": true,
+            "schema": {
+              "description": "Genome accession; mock API supports U00096.3",
+              "title": "Accession",
+              "type": "string"
+            }
+          },
+          {
+            "description": "1-based center coordinate for the visible window",
+            "in": "query",
+            "name": "center",
+            "required": true,
+            "schema": {
+              "description": "1-based center coordinate for the visible window",
+              "minimum": 1,
+              "title": "Center",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ViewerWindowResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Unsupported accession."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Viewer Window",
+        "tags": [
+          "viewer"
         ]
       }
     }
