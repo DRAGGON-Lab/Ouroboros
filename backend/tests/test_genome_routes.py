@@ -73,3 +73,67 @@ def test_openapi_declares_400_and_404_for_mock_validation_errors() -> None:
         assert responses["400"]["description"] == "Invalid coordinate range."
         assert "404" in responses
         assert responses["404"]["description"] == "Unsupported accession."
+
+
+def test_get_viewer_window_success_shape_and_lengths() -> None:
+    response = client.get(
+        "/api/v1/viewer/window",
+        params={"accession": "U00096.3", "center": 2_000},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert payload["sequenceId"] == "U00096.3"
+    assert payload["genomeLength"] == 4_641_652
+    assert payload["visibleLength"] == 1_000
+    assert payload["bufferLeft"] == 250
+    assert payload["bufferRight"] == 250
+
+    fetch_len = payload["fetchEnd"] - payload["fetchStart"] + 1
+    assert len(payload["bases"]) == fetch_len
+    assert len(payload["forwardFn"]) == fetch_len
+    assert len(payload["reverseFn"]) == fetch_len
+    assert len(payload["forwardActivity"]) == fetch_len
+    assert len(payload["reverseActivity"]) == fetch_len
+
+    assert set(payload["bases"]).issubset({"A", "C", "G", "T", "-"})
+    assert set(payload["forwardFn"]).issubset({"P", "C", "-"})
+    assert set(payload["reverseFn"]).issubset({"P", "C", "-"})
+
+    assert payload["fetchStart"] <= payload["visibleStart"] <= payload["visibleEnd"] <= payload["fetchEnd"]
+    assert payload["visibleEnd"] - payload["visibleStart"] + 1 <= payload["visibleLength"]
+
+    for value in payload["forwardActivity"] + payload["reverseActivity"]:
+        assert isinstance(value, (int, float))
+        assert 0 <= value <= 2
+
+
+def test_get_viewer_window_start_boundary_behavior() -> None:
+    response = client.get(
+        "/api/v1/viewer/window",
+        params={"accession": "U00096.3", "center": 1},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["requestedCenter"] == 1
+    assert payload["visibleStart"] == 1
+    assert payload["fetchStart"] == 1
+    assert payload["visibleEnd"] == 1_000
+    assert payload["fetchEnd"] == 1_250
+
+
+def test_get_viewer_window_end_boundary_behavior() -> None:
+    response = client.get(
+        "/api/v1/viewer/window",
+        params={"accession": "U00096.3", "center": 4_641_652},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["requestedCenter"] == 4_641_652
+    assert payload["visibleEnd"] == 4_641_652
+    assert payload["fetchEnd"] == 4_641_652
+    assert payload["visibleStart"] == 4_640_653
+    assert payload["fetchStart"] == 4_640_403

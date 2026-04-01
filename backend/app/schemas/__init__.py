@@ -5,6 +5,7 @@ from app.schemas.genome import (
     AnnotationSource,
     GenomeRegionResponse,
     Strand,
+    ViewerWindowResponse,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "AnnotationSource",
     "GenomeRegionResponse",
     "Strand",
+    "ViewerWindowResponse",
 ]
