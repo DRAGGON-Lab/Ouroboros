@@ -7,8 +7,10 @@ from app.schemas import (
     AnnotationSource,
     GenomeRegionResponse,
     Strand,
+    ViewerSequenceResponse,
     ViewerWindowResponse,
 )
+from app.services.sequence_loader import load_example_plasmid_sequence, load_example_sequence
 from app.services.viewer_window import WindowMetadata, build_viewer_window_encoding
 
 router = APIRouter()
@@ -221,4 +223,36 @@ def get_viewer_window(
         reverseFn=encoding["reverseFn"],
         forwardActivity=encoding["forwardActivity"],
         reverseActivity=encoding["reverseActivity"],
+    )
+
+
+@router.get(
+    "/viewer/sequence",
+    response_model=ViewerSequenceResponse,
+    tags=["viewer"],
+    responses={
+        400: {"description": "Unsupported sequence source."},
+    },
+)
+def get_viewer_sequence(
+    source: str = Query(
+        "example_sequence",
+        description="Sequence source: example_sequence or example_plasmid",
+    ),
+) -> ViewerSequenceResponse:
+    if source == "example_sequence":
+        sequence_id, sequence = load_example_sequence()
+    elif source == "example_plasmid":
+        sequence_id, sequence = load_example_plasmid_sequence()
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported sequence source. Use 'example_sequence' or 'example_plasmid'.",
+        )
+
+    return ViewerSequenceResponse(
+        source=source,
+        sequenceId=sequence_id,
+        sequence=sequence,
+        length=len(sequence),
     )

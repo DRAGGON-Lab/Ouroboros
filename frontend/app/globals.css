@@ -7,11 +7,13 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   min-height: 100vh;
   background: #ffffff;
   color: #101828;
+  overflow-x: hidden;
 }
 
 .homeCanvas {
@@ -64,72 +66,120 @@ body {
 .viewerPageMain {
   min-height: 100vh;
   width: 100%;
-  padding: 1rem;
-}
-
-.viewerShell {
-  min-height: calc(100vh - 2rem);
-  background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
-  border-radius: 16px;
-  border: 1px solid #d0d5dd;
-  padding: 1rem;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 1rem;
-}
-
-.viewerHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.viewerHeader h1 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-.viewerHeader p {
-  margin: 0.25rem 0 0;
-}
-
-.viewerControls {
-  text-align: right;
-  display: grid;
-  gap: 0.25rem;
-}
-
-.viewerControls button {
-  margin-left: 0.5rem;
-}
-
-.viewerCanvas {
-  position: relative;
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  min-height: 0;
-}
-
-.viewerCircular {
-  align-self: start;
-  justify-self: start;
-}
-
-.viewerLinearRegion {
-  align-self: end;
-  justify-self: center;
-  width: min(100%, 94vw);
-  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 0.5rem;
+  padding: clamp(1rem, 2vw, 2rem);
+  background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
 }
 
-.viewerLinearScroll {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 0.5rem;
+
+
+.viewerToolbar {
+  width: min(1200px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+}
+
+.viewerToolbar label {
+  font-weight: 600;
+}
+
+.viewerToolbar select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: #ffffff;
+}
+
+.viewerToolbar p {
+  margin: 0;
+  color: #475467;
+  margin-left: auto;
+}
+
+.dnaScroller {
+  width: min(1200px, 100%);
+  border: 1px solid #d0d5dd;
+  border-radius: 20px;
+  padding: clamp(1rem, 2vw, 2rem);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 18px 56px rgba(16, 24, 40, 0.08);
+  display: grid;
+  gap: 1rem;
+}
+
+.dnaScrollerHeader h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+.dnaScrollerHeader p {
+  margin: 0.35rem 0 0;
+  color: #475467;
+}
+
+.dnaViewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  background: #101828;
+  padding: 1rem 0;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.dnaViewport:active {
+  cursor: grabbing;
+}
+
+.dnaCenterMarker {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #2e90fa 0%, #53b1fd 100%);
+  box-shadow: 0 0 18px rgba(83, 177, 253, 0.7);
+  border-radius: 999px;
+  z-index: 2;
+}
+
+.dnaTrack {
+  display: inline-flex;
+  align-items: center;
+  will-change: transform;
+  white-space: nowrap;
+}
+
+.dnaBase {
+  width: 22px;
+  text-align: center;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.dnaBase-A { color: #fda29b; }
+.dnaBase-C { color: #a4bcfd; }
+.dnaBase-G { color: #6ce9a6; }
+.dnaBase-T { color: #fecdca; }
+
+.dnaHint {
+  margin: 0;
+  color: #667085;
+  font-size: 0.92rem;
 }
 
 @media (max-width: 900px) {
@@ -137,71 +187,12 @@ body {
     padding: 2rem 1.25rem;
   }
 
-  .viewerHeader {
-    flex-direction: column;
+  .viewerToolbar {
+    flex-wrap: wrap;
   }
 
-  .viewerControls {
-    text-align: left;
+  .viewerToolbar p {
+    margin-left: 0;
+    width: 100%;
   }
-
-  .viewerControls button {
-    margin: 0.25rem 0.5rem 0 0;
-  }
-
-  .viewerCircular {
-    justify-self: center;
-  }
-}
-
-.linearSequenceViewer {
-  width: min(100%, 1200px);
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: stretch;
-  gap: 0;
-  background: #ffffff;
-  border: 1px solid #d0d5dd;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-  padding: 0.5rem 0;
-}
-
-.linearBaseColumn {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-}
-
-.baseBox {
-  width: 100%;
-  max-width: 20px;
-  min-height: 22px;
-  border: 1px solid #101828;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: clamp(7px, 0.5vw, 11px);
-  font-weight: 700;
-  line-height: 1;
-  color: #101828;
-}
-
-.activityBar {
-  width: min(8px, 80%);
-  background: #667085;
-  border-radius: 999px;
-}
-
-.activityBarTop {
-  transform-origin: bottom;
-}
-
-.activityBarBottom {
-  transform-origin: top;
 }

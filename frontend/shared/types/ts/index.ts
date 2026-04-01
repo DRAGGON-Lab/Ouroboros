@@ -48,3 +48,13 @@ export interface ViewerPayload {
   visibleForwardActivity: number[];
   visibleReverseActivity: number[];
 }
+
+
+export type ViewerSequenceSource = "example_sequence" | "example_plasmid";
+
+export interface ViewerSequenceResponse {
+  source: ViewerSequenceSource;
+  sequenceId: string;
+  sequence: string;
+  length: number;
+}

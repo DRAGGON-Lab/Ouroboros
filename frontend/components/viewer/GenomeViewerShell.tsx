@@ -1,30 +1,75 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 
-import { loadViewerPayload } from "../../features/viewer/api";
-import type { ViewerPayload } from "../../shared/types/ts";
-import SeqVizLayout from "./SeqVizLayout";
+import { loadViewerSequence } from "../../features/viewer/api";
+import type { ViewerSequenceSource } from "../../shared/types/ts";
+import CircularDnaScroller from "./CircularDnaScroller";
 
-const DEFAULT_ACCESSION = "NC_000913.3";
-const DEFAULT_COORDINATE = 235000;
+const EXAMPLE_SEQUENCE_SOURCE: ViewerSequenceSource = "example_sequence";
+const EXAMPLE_PLASMID_SOURCE: ViewerSequenceSource = "example_plasmid";
+
+const EXAMPLE_SEQUENCE_LENGTH = 1_011;
+const DEFAULT_EXAMPLE_SEQUENCE = ("ACGT".repeat(Math.ceil(EXAMPLE_SEQUENCE_LENGTH / 4))).slice(0, EXAMPLE_SEQUENCE_LENGTH);
 
 export default function GenomeViewerShell() {
-  const [selectedCoordinate, setSelectedCoordinate] = useState<number>(DEFAULT_COORDINATE);
-  const [payload, setPayload] = useState<ViewerPayload | null>(null);
+  const [selectedSource, setSelectedSource] = useState<ViewerSequenceSource>(EXAMPLE_SEQUENCE_SOURCE);
+  const [sequence, setSequence] = useState<string>(DEFAULT_EXAMPLE_SEQUENCE);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string>("");
 
-  useEffect(() => {
-    void loadViewerPayload(DEFAULT_ACCESSION, selectedCoordinate).then(setPayload);
-  }, [selectedCoordinate]);
+  const sourceLabel = useMemo(() => {
+    if (selectedSource === EXAMPLE_PLASMID_SOURCE) {
+      return "Example plasmid";
+    }
+
+    return "Example sequence";
+  }, [selectedSource]);
+
+  const onSourceChange = async (nextSource: ViewerSequenceSource): Promise<void> => {
+    setSelectedSource(nextSource);
+    setLoadError("");
+
+    if (nextSource === EXAMPLE_SEQUENCE_SOURCE) {
+      setSequence(DEFAULT_EXAMPLE_SEQUENCE);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = await loadViewerSequence(nextSource);
+      setSequence(payload.sequence);
+    } catch {
+      setSelectedSource(EXAMPLE_SEQUENCE_SOURCE);
+      setSequence(DEFAULT_EXAMPLE_SEQUENCE);
+      setLoadError("Could not load example plasmid from backend. Showing example sequence instead.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const statusMessage = isLoading
+    ? "Loading sequence..."
+    : loadError || `${sourceLabel} loaded · ${sequence.length.toLocaleString()} bp`;
 
   return (
     <main className="viewerPageMain">
-      <SeqVizLayout
-        accession={payload?.accession ?? DEFAULT_ACCESSION}
-        payload={payload}
-        selectedCoordinate={selectedCoordinate}
-        onShiftCenter={(offset) => setSelectedCoordinate((coordinate) => coordinate + offset)}
-      />
+      <section className="viewerToolbar" aria-label="viewer-toolbar">
+        <label htmlFor="sequence-source-select">Sequence</label>
+        <select
+          id="sequence-source-select"
+          value={selectedSource}
+          onChange={(event) => {
+            void onSourceChange(event.target.value as ViewerSequenceSource);
+          }}
+        >
+          <option value={EXAMPLE_SEQUENCE_SOURCE}>Example sequence (1011 bp)</option>
+          <option value={EXAMPLE_PLASMID_SOURCE}>Example plasmid</option>
+        </select>
+        <p aria-live="polite">{statusMessage}</p>
+      </section>
+
+      <CircularDnaScroller sequence={sequence} />
     </main>
   );
 }
