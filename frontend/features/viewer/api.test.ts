@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { buildVisibleWindow, getVisibleSliceIndexes, loadViewerPayload } from "./api";
+import { buildVisibleWindow, getVisibleSliceIndexes, loadViewerPayload, loadViewerSequence } from "./api";
 import type { ViewerWindowResponse } from "../../shared/types/ts";
 
 const createWindowResponse = (overrides: Partial<ViewerWindowResponse> = {}): ViewerWindowResponse => ({
@@ -126,5 +126,27 @@ describe("loadViewerPayload", () => {
     expect(payload.visibleReverseActivity).toHaveLength(1_000);
     expect((payload as unknown as { features?: unknown }).features).toBeUndefined();
     expect((payload as unknown as { nucleotides?: unknown }).nucleotides).toBeUndefined();
+  });
+});
+
+
+describe("loadViewerSequence", () => {
+  it("requests the selected sequence source endpoint", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        source: "example_plasmid",
+        sequenceId: "example-plasmid",
+        sequence: "ACGT",
+        length: 4
+      })
+    });
+
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const payload = await loadViewerSequence("example_plasmid");
+
+    expect(fetchSpy).toHaveBeenCalledWith("http://localhost/api/v1/viewer/sequence?source=example_plasmid");
+    expect(payload.length).toBe(4);
   });
 });

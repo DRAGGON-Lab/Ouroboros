@@ -66,3 +66,10 @@ class ViewerWindowResponse(BaseModel):
     reverseFn: str = Field(pattern=r"^[PC-]+$")
     forwardActivity: list[float]
     reverseActivity: list[float]
+
+
+class ViewerSequenceResponse(BaseModel):
+    source: str
+    sequenceId: str
+    sequence: str = Field(pattern=r"^[ACGTN-]+$")
+    length: int = Field(ge=1)

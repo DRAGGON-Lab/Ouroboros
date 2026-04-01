@@ -66,10 +66,43 @@ body {
 .viewerPageMain {
   min-height: 100vh;
   width: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: clamp(1rem, 2vw, 2rem);
   background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
+}
+
+
+
+.viewerToolbar {
+  width: min(1200px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+}
+
+.viewerToolbar label {
+  font-weight: 600;
+}
+
+.viewerToolbar select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: #ffffff;
+}
+
+.viewerToolbar p {
+  margin: 0;
+  color: #475467;
+  margin-left: auto;
 }
 
 .dnaScroller {
@@ -152,5 +185,14 @@ body {
 @media (max-width: 900px) {
   .homeHero {
     padding: 2rem 1.25rem;
+  }
+
+  .viewerToolbar {
+    flex-wrap: wrap;
+  }
+
+  .viewerToolbar p {
+    margin-left: 0;
+    width: 100%;
   }
 }
