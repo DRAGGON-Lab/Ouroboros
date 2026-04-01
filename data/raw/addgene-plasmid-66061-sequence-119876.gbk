@@ -1,0 +1,203 @@
+LOCUS       sequence-119876-        4033 bp    DNA     circular SYN 15-DEC-2025
+DEFINITION  MoClo Device: FACS Standard Color Controls - High GFP (first unit).
+ACCESSION   .
+VERSION     .
+KEYWORDS    .
+SOURCE      synthetic DNA construct
+  ORGANISM  synthetic DNA construct
+REFERENCE   1  (bases 1 to 4033)
+  AUTHORS   Iverson SV, Haddock TL, Beal J, Densmore DM
+  TITLE     CIDAR MoClo: Improved MoClo Assembly Standard and New E. coli Part 
+            Library Enable Rapid Combinatorial Design for Synthetic and 
+            Traditional Biology.
+  JOURNAL   ACS Synth Biol. 2016 Jan 15;5(1):99-103. doi: 
+            10.1021/acssynbio.5b00124. Epub 2015 Nov 4.
+  PUBMED    26479688
+REFERENCE   2  (bases 1 to 4033)
+  AUTHORS   .
+  TITLE     Direct Submission
+  JOURNAL   Exported Dec 15, 2025 from SnapGene Server 8.0.1
+            https://www.snapgene.com
+COMMENT     SGRef: number: 1; type: "Journal Article"; doi: 
+            "10.1021/acssynbio.5b00124"; journalName: "ACS Synth Biol"; date: 
+            "2016-01-15- 15"; volume: "5"; issue: "1"; pages: "99-103"
+COMMENT     Sequence Label: pJ02B2Gm:Rm_AF
+FEATURES             Location/Qualifiers
+     source          1..4033
+                     /mol_type="other DNA"
+                     /organism="synthetic DNA construct"
+     primer_bind     25..44
+                     /label=Amp-R
+                     /note="Ampicillin resistance gene, reverse primer"
+     promoter        complement(263..367)
+                     /gene="bla"
+                     /label=AmpR promoter
+     primer_bind     435..453
+                     /label=pBRforEco
+                     /note="pBR322 vectors, upsteam of EcoRI site, forward 
+                     primer"
+     terminator      complement(457..500)
+                     /label=bacterial terminator
+                     /note="putative bacterial transcription terminator"
+     misc_feature    503..524
+                     /label=BioBrick prefix
+                     /note="BioBrick prefix for parts that do not start with 
+                     ""ATG"""
+     promoter        543..577
+                     /label=BBa_J23102
+                     /note="Anderson constitutive promoter 
+                     (https://parts.igem.org/Promoters/Catalog/Anderson). 
+                     Measured strength relative to BBa_J223100: 0.86"
+     RBS             652..660
+                     /label=Shine-Dalgarno sequence
+                     /note="full consensus sequence for ribosome-binding sites 
+                     upstream of start codons in E. coli; complementary to a 
+                     region in the 3' end of the 16S rRNA (Chen et al., 1994)"
+     CDS             670..1383
+                     /codon_start=1
+                     /product="S65T variant of Aequorea victoria green 
+                     fluorescent protein (Heim et al., 1995)"
+                     /label=GFP (S65T)
+                     /note="excitable with blue light"
+                     /translation="MRKGEELFTGVVPILVELDGDVNGHKFSVSGEGEGDATYGKLTLK
+                     FICTTGKLPVPWPTLVTTFGYGVQCFARYPDHMKQHDFFKSAMPEGYVQERTIFFKDDG
+                     NYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNYNSHNVYIMADKQKNGIKV
+                     NFKIRHNIEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSTQSALSKDPNEKRDYMVLLE
+                     FVTAAGITHGMDELYK"
+     primer_bind     complement(700..728)
+                     /label=GFP-R
+                     /note="GFP, reverse primer. Does NOT anneal to EGFP"
+     primer_bind     1323..1343
+                     /label=GFP-F
+                     /note="GFP, forward primer. Does NOT anneal to EGFP"
+     terminator      1402..1473
+                     /label=rrnB T1 terminator
+                     /note="transcription terminator T1 from the E. coli rrnB 
+                     gene"
+     terminator      1489..1516
+                     /label=T7Te terminator
+                     /note="phage T7 early transcription terminator"
+     promoter        1527..1561
+                     /label=BBa_J23102
+                     /note="Anderson constitutive promoter 
+                     (https://parts.igem.org/Promoters/Catalog/Anderson). 
+                     Measured strength relative to BBa_J223100: 0.86"
+     RBS             1636..1644
+                     /label=Shine-Dalgarno sequence
+                     /note="full consensus sequence for ribosome-binding sites 
+                     upstream of start codons in E. coli; complementary to a 
+                     region in the 3' end of the 16S rRNA (Chen et al., 1994)"
+     CDS             1654..2331
+                     /codon_start=1
+                     /product="monomeric derivative of DsRed (Campbell et al., 
+                     2002)"
+                     /label=mRFP1
+                     /translation="MASSEDVIKEFMRFKVRMEGSVNGHEFEIEGEGEGRPYEGTQTAK
+                     LKVTKGGPLPFAWDILSPQFQYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGV
+                     VTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASTERMYPEDGALKGEIKM
+                     RLKLKDGGHYDAEVKTTYMAKKPVQLPGAYKTDIKLDITSHNEDYTIVEQYERAEGRHS
+                     TGA"
+     terminator      2347..2418
+                     /label=rrnB T1 terminator
+                     /note="transcription terminator T1 from the E. coli rrnB 
+                     gene"
+     terminator      2434..2461
+                     /label=T7Te terminator
+                     /note="phage T7 early transcription terminator"
+     misc_feature    2479..2499
+                     /label=BioBrick suffix
+                     /note="universal suffix for all parts"
+     primer_bind     complement(2505..2522)
+                     /label=L4440
+                     /note="L4440 vector, forward primer"
+     rep_origin      complement(2676..3264)
+                     /direction=LEFT
+                     /label=ori
+                     /note="high-copy-number ColE1/pMB1/pBR322/pUC origin of 
+                     replication"
+     primer_bind     complement(2756..2775)
+                     /label=pBR322ori-F
+                     /note="pBR322 origin, forward primer"
+     CDS             complement(join(3435..4033,1..193,194..262))
+                     /codon_start=1
+                     /gene="bla"
+                     /product="beta-lactamase"
+                     /label=AmpR
+                     /note="confers resistance to ampicillin, carbenicillin, and
+                     related antibiotics"
+                     /translation="MSIQHFRVALIPFFAAFCLPVFAHPETLVKVKDAEDQLGARVGYI
+                     ELDLNSGKILESFRPEERFPMMSTFKVLLCGAVLSRIDAGQEQLGRRIHYSQNDLVEYS
+                     PVTEKHLTDGMTVRELCSAAITMSDNTAANLLLTTIGGPKELTAFLHNMGDHVTRLDRW
+                     EPELNEAIPNDERDTTMPVAMATTLRKLLTGELLTLASRQQLIDWMEADKVAGPLLRSA
+                     LPAGWFIADKSGAGERGSRGIIAALGPDGKPSRIVVIYTTGSQATMDERNRQIAEIGAS
+                     LIKHW"
+ORIGIN
+        1 gctcttgccc ggcgtcaata cgggataata ccgcgccaca tagcagaact ttaaaagtgc
+       61 tcatcattgg aaaacgttct tcggggcgaa aactctcaag gatcttaccg ctgttgagat
+      121 ccagttcgat gtaacccact cgtgcaccca actgatcttc agcatctttt actttcacca
+      181 gcgtttctgg gtgagcaaaa acaggaaggc aaaatgccgc aaaaaaggga ataagggcga
+      241 cacggaaatg ttgaatactc atactcttcc tttttcaata ttattgaagc atttatcagg
+      301 gttattgtct catgagcgga tacatatttg aatgtattta gaaaaataaa caaatagggg
+      361 ttccgcgcac atttccccga aaagtgccac ctgacgtcta agaaaccatt attatcatga
+      421 cattaaccta taaaaatagg cgtatcacga ggcagaattt cagataaaaa aaatccttag
+      481 ctttcgctaa ggatgatttc tggaattcgc ggccgcttct agagactagt gggtctcagg
+      541 agttgacagc tagctcagtc ctaggtactg tgctagctac tgggcccaag ttcacttaaa
+      601 aaggagatca acaatgaaag caattttcgt actgaaacat cttaatcatg ctaaggaggt
+      661 tttctaatga tgcgtaaagg agaagaactt ttcactggag ttgtcccaat tcttgttgaa
+      721 ttagatggtg atgttaatgg gcacaaattt tctgtcagtg gagagggtga aggtgatgca
+      781 acatacggaa aacttaccct taaatttatt tgcactactg gaaaactacc tgttccatgg
+      841 ccaacacttg tcactacttt cggttatggt gttcaatgct ttgcgagata cccagatcat
+      901 atgaaacagc atgacttttt caagagtgcc atgcccgaag gttatgtaca ggaaagaact
+      961 atatttttca aagatgacgg gaactacaag acacgtgctg aagtcaagtt tgaaggtgat
+     1021 acccttgtta atagaatcga gttaaaaggt attgatttta aagaagatgg aaacattctt
+     1081 ggacacaaat tggaatacaa ctataactca cacaatgtat acatcatggc agacaaacaa
+     1141 aagaatggaa tcaaagttaa cttcaaaatt agacacaaca ttgaagatgg aagcgttcaa
+     1201 ctagcagacc attatcaaca aaatactcca attggcgatg gccctgtcct tttaccagac
+     1261 aaccattacc tgtccacaca atctgccctt tcgaaagatc ccaacgaaaa gagagactac
+     1321 atggtccttc ttgagtttgt aacagctgct gggattacac atggcatgga tgaactatac
+     1381 aaataataaa ggtccaggca tcaaataaaa cgaaaggctc agtcgaaaga ctgggccttt
+     1441 cgttttatct gttgtttgtc ggtgaacgct ctctactaga gtcacactgg ctcaccttcg
+     1501 ggtgggcctt tctgcgttta tagcttttga cagctagctc agtcctaggt actgtgctag
+     1561 ctactgggcc caagttcact taaaaaggag atcaacaatg aaagcaattt tcgtactgaa
+     1621 acatcttaat catgctaagg aggttttcta atgatggctt cctccgagga tgttatcaaa
+     1681 gagttcatgc gtttcaaagt tcgtatggaa ggttccgtta acggtcacga gttcgaaatc
+     1741 gaaggtgaag gtgaaggtcg tccgtacgaa ggtacccaga ccgctaaact gaaagttacc
+     1801 aaaggtggtc cgctgccgtt cgcttgggac atcctgtccc cgcagttcca gtacggttcc
+     1861 aaagcttacg ttaaacaccc ggctgacatc ccggactacc tgaaactgtc cttcccggaa
+     1921 ggtttcaaat gggaacgtgt tatgaacttc gaagatggtg gtgttgttac cgttacccag
+     1981 gactcctccc tgcaagacgg tgagttcatc tacaaagtta aactgcgtgg taccaacttc
+     2041 ccgtccgacg gtccggttat gcagaaaaaa accatgggtt gggaagcttc caccgaacgt
+     2101 atgtacccgg aggatggtgc tctgaaaggt gaaatcaaaa tgcgtctgaa actgaaagac
+     2161 ggtggtcact acgacgctga agttaaaacc acctacatgg ctaaaaaacc ggttcagctg
+     2221 ccgggtgctt acaaaaccga catcaaactg gacatcacct cccacaacga ggactacacc
+     2281 atcgttgaac agtacgaacg tgctgaaggt cgtcactcca ccggtgctta ataaaggtcc
+     2341 aggcatcaaa taaaacgaaa ggctcagtcg aaagactggg cctttcgttt tatctgttgt
+     2401 ttgtcggtga acgctctcta ctagagtcac actggctcac cttcgggtgg gcctttctgc
+     2461 gtttatacgc tagagaccta ctagtagcgg ccgctgcagg cttcctcgct cactgactcg
+     2521 ctgcgctcgg tcgttcggct gcggcgagcg gtatcagctc actcaaaggc ggtaatacgg
+     2581 ttatccacag aatcagggga taacgcagga aagaacatgt gagcaaaagg ccagcaaaag
+     2641 gccaggaacc gtaaaaaggc cgcgttgctg gcgtttttcc acaggctccg cccccctgac
+     2701 gagcatcaca aaaatcgacg ctcaagtcag aggtggcgaa acccgacagg actataaaga
+     2761 taccaggcgt ttccccctgg aagctccctc gtgcgctctc ctgttccgac cctgccgctt
+     2821 accggatacc tgtccgcctt tctcccttcg ggaagcgtgg cgctttctca tagctcacgc
+     2881 tgtaggtatc tcagttcggt gtaggtcgtt cgctccaagc tgggctgtgt gcacgaaccc
+     2941 cccgttcagc ccgaccgctg cgccttatcc ggtaactatc gtcttgagtc caacccggta
+     3001 agacacgact tatcgccact ggcagcagcc actggtaaca ggattagcag agcgaggtat
+     3061 gtaggcggtg ctacagagtt cttgaagtgg tggcctaact acggctacac tagaagaaca
+     3121 gtatttggta tctgcgctct gctgaagcca gttaccttcg gaaaaagagt tggtagctct
+     3181 tgatccggca aacaaaccac cgctggtagc ggtggttttt ttgtttgcaa gcagcagatt
+     3241 acgcgcagaa aaaaaggatc tcaagaagat cctttgatct tttctacggg gtctgacgct
+     3301 cagtggaacg aaaactcacg ttaagggatt ttggtcatga gattatcaaa aaggatcttc
+     3361 acctagatcc ttttaaatta aaaatgaagt tttaaatcaa tctaaagtat atatgagtaa
+     3421 acttggtctg acagttacca atgcttaatc agtgaggcac ctatctcagc gatctgtcta
+     3481 tttcgttcat ccatagttgc ctgactcccc gtcgtgtaga taactacgat acgggagggc
+     3541 ttaccatctg gccccagtgc tgcaatgata ccgcgcgacc cacgctcacc ggctccagat
+     3601 ttatcagcaa taaaccagcc agccggaagg gccgagcgca gaagtggtcc tgcaacttta
+     3661 tccgcctcca tccagtctat taattgttgc cgggaagcta gagtaagtag ttcgccagtt
+     3721 aatagtttgc gcaacgttgt tgccattgct acaggcatcg tggtgtcacg ctcgtcgttt
+     3781 ggtatggctt cattcagctc cggttcccaa cgatcaaggc gagttacatg atcccccatg
+     3841 ttgtgcaaaa aagcggttag ctccttcggt cctccgatcg ttgtcagaag taagttggcc
+     3901 gcagtgttat cactcatggt tatggcagca ctgcataatt ctcttactgt catgccatcc
+     3961 gtaagatgct tttctgtgac tggtgagtac tcaaccaagt cattctgaga atagtgtatg
+     4021 cggcgaccga gtt
+//
