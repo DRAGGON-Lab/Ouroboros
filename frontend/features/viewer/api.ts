@@ -85,8 +85,7 @@ export const loadViewerPayload = async (
   });
 
   try {
-    const endpoint = new URL(`/api/v1/viewer/window?${query.toString()}`, "http://localhost");
-    const response = await fetch(endpoint.toString());
+    const response = await fetch(`/api/v1/viewer/window?${query.toString()}`);
 
     if (!response.ok) {
       throw new Error(`Viewer payload request failed with status ${response.status}`);
@@ -124,8 +123,7 @@ export const loadViewerPayload = async (
 
 export const loadViewerSequence = async (source: ViewerSequenceSource): Promise<ViewerSequenceResponse> => {
   const query = new URLSearchParams({ source });
-  const endpoint = new URL(`/api/v1/viewer/sequence?${query.toString()}`, "http://localhost");
-  const response = await fetch(endpoint.toString());
+  const response = await fetch(`/api/v1/viewer/sequence?${query.toString()}`);
 
   if (!response.ok) {
     throw new Error(`Viewer sequence request failed with status ${response.status}`);

@@ -16,6 +16,7 @@ export default function GenomeViewerShell() {
   const [selectedSource, setSelectedSource] = useState<ViewerSequenceSource>(EXAMPLE_SEQUENCE_SOURCE);
   const [sequence, setSequence] = useState<string>(DEFAULT_EXAMPLE_SEQUENCE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string>("");
 
   const sourceLabel = useMemo(() => {
     if (selectedSource === EXAMPLE_PLASMID_SOURCE) {
@@ -27,6 +28,7 @@ export default function GenomeViewerShell() {
 
   const onSourceChange = async (nextSource: ViewerSequenceSource): Promise<void> => {
     setSelectedSource(nextSource);
+    setLoadError("");
 
     if (nextSource === EXAMPLE_SEQUENCE_SOURCE) {
       setSequence(DEFAULT_EXAMPLE_SEQUENCE);
@@ -37,10 +39,18 @@ export default function GenomeViewerShell() {
     try {
       const payload = await loadViewerSequence(nextSource);
       setSequence(payload.sequence);
+    } catch {
+      setSelectedSource(EXAMPLE_SEQUENCE_SOURCE);
+      setSequence(DEFAULT_EXAMPLE_SEQUENCE);
+      setLoadError("Could not load example plasmid from backend. Showing example sequence instead.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const statusMessage = isLoading
+    ? "Loading sequence..."
+    : loadError || `${sourceLabel} loaded · ${sequence.length.toLocaleString()} bp`;
 
   return (
     <main className="viewerPageMain">
@@ -56,9 +66,7 @@ export default function GenomeViewerShell() {
           <option value={EXAMPLE_SEQUENCE_SOURCE}>Example sequence (1011 bp)</option>
           <option value={EXAMPLE_PLASMID_SOURCE}>Example plasmid</option>
         </select>
-        <p aria-live="polite">
-          {isLoading ? "Loading sequence..." : `${sourceLabel} loaded · ${sequence.length.toLocaleString()} bp`}
-        </p>
+        <p aria-live="polite">{statusMessage}</p>
       </section>
 
       <CircularDnaScroller sequence={sequence} />
