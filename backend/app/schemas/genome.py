@@ -48,3 +48,21 @@ class AnnotationListResponse(BaseModel):
     start: int = Field(ge=1)
     end: int = Field(ge=1)
     annotations: list[AnnotationFeature]
+
+
+class ViewerWindowResponse(BaseModel):
+    sequenceId: str
+    genomeLength: int = Field(ge=1)
+    requestedCenter: int = Field(ge=1)
+    visibleStart: int = Field(ge=1)
+    visibleEnd: int = Field(ge=1)
+    fetchStart: int = Field(ge=1)
+    fetchEnd: int = Field(ge=1)
+    visibleLength: int = Field(ge=1)
+    bufferLeft: int = Field(ge=0)
+    bufferRight: int = Field(ge=0)
+    bases: str = Field(pattern=r"^[ACGT-]+$")
+    forwardFn: str = Field(pattern=r"^[PC-]+$")
+    reverseFn: str = Field(pattern=r"^[PC-]+$")
+    forwardActivity: list[float]
+    reverseActivity: list[float]

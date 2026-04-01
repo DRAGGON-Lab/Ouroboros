@@ -7,6 +7,7 @@ from app.schemas import (
     AnnotationSource,
     GenomeRegionResponse,
     Strand,
+    ViewerWindowResponse,
 )
 
 router = APIRouter()
@@ -93,6 +94,26 @@ def _annotations_in_range(start: int, end: int) -> list[AnnotationFeature]:
     ]
 
 
+def _clamp(value: int, lower: int, upper: int) -> int:
+    return max(lower, min(value, upper))
+
+
+def _mock_function_track(start: int, end: int, *, reverse: bool = False) -> str:
+    codes = "PC--"
+    return "".join(
+        codes[((position - 1) + (1 if reverse else 0)) % len(codes)]
+        for position in range(start, end + 1)
+    )
+
+
+def _mock_activity_track(start: int, end: int, *, reverse: bool = False) -> list[float]:
+    values = [0.0, 0.5, 1.0, 1.5, 2.0]
+    return [
+        values[((position - 1) + (2 if reverse else 0)) % len(values)]
+        for position in range(start, end + 1)
+    ]
+
+
 @router.get(
     "/genome/region",
     response_model=GenomeRegionResponse,
@@ -143,4 +164,50 @@ def get_annotations(
         start=start,
         end=end,
         annotations=_annotations_in_range(start, end),
+    )
+
+
+@router.get(
+    "/viewer/window",
+    response_model=ViewerWindowResponse,
+    tags=["viewer"],
+    responses={
+        404: {"description": "Unsupported accession."},
+    },
+)
+def get_viewer_window(
+    accession: str = Query(..., description="Genome accession; mock API supports U00096.3"),
+    center: int = Query(..., ge=1, description="1-based center coordinate for the visible window"),
+) -> ViewerWindowResponse:
+    visible_length = 1_000
+    buffer_left = 250
+    buffer_right = 250
+
+    _validate_accession(accession)
+
+    requested_center = _clamp(center, 1, GENOME_LENGTH)
+    half_window_left = visible_length // 2
+    visible_start = _clamp(requested_center - half_window_left, 1, GENOME_LENGTH)
+    visible_end = _clamp(visible_start + visible_length - 1, 1, GENOME_LENGTH)
+    visible_start = _clamp(visible_end - visible_length + 1, 1, GENOME_LENGTH)
+
+    fetch_start = _clamp(visible_start - buffer_left, 1, GENOME_LENGTH)
+    fetch_end = _clamp(visible_end + buffer_right, 1, GENOME_LENGTH)
+
+    return ViewerWindowResponse(
+        sequenceId=accession,
+        genomeLength=GENOME_LENGTH,
+        requestedCenter=requested_center,
+        visibleStart=visible_start,
+        visibleEnd=visible_end,
+        fetchStart=fetch_start,
+        fetchEnd=fetch_end,
+        visibleLength=visible_length,
+        bufferLeft=buffer_left,
+        bufferRight=buffer_right,
+        bases=_mock_sequence(fetch_start, fetch_end).replace("N", "-"),
+        forwardFn=_mock_function_track(fetch_start, fetch_end),
+        reverseFn=_mock_function_track(fetch_start, fetch_end, reverse=True),
+        forwardActivity=_mock_activity_track(fetch_start, fetch_end),
+        reverseActivity=_mock_activity_track(fetch_start, fetch_end, reverse=True),
     )
