@@ -10,20 +10,18 @@ const DEFAULT_ACCESSION = "NC_000913.3";
 const DEFAULT_COORDINATE = 235000;
 
 export default function GenomeViewerShell() {
-  const [selectedCoordinate, setSelectedCoordinate] = useState<number>(DEFAULT_COORDINATE);
   const [payload, setPayload] = useState<ViewerPayload | null>(null);
 
   useEffect(() => {
-    void loadViewerPayload(DEFAULT_ACCESSION, selectedCoordinate).then(setPayload);
-  }, [selectedCoordinate]);
+    void loadViewerPayload(DEFAULT_ACCESSION, DEFAULT_COORDINATE).then(setPayload);
+  }, []);
 
   return (
     <main className="viewerPageMain">
       <SeqVizLayout
         accession={payload?.accession ?? DEFAULT_ACCESSION}
         payload={payload}
-        selectedCoordinate={selectedCoordinate}
-        onShiftCenter={(offset) => setSelectedCoordinate((coordinate) => coordinate + offset)}
+        selectedCoordinate={DEFAULT_COORDINATE}
       />
     </main>
   );

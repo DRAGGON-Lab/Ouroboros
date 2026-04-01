@@ -50,17 +50,6 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.viewerLinkButton:hover {
-  background: #0c111d;
-  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.2);
-  transform: translateY(-1px);
-}
-
-.viewerLinkButton:focus-visible {
-  outline: 2px solid #2e90fa;
-  outline-offset: 4px;
-}
-
 .viewerPageMain {
   min-height: 100vh;
   width: 100%;
@@ -69,139 +58,122 @@ body {
 
 .viewerShell {
   min-height: calc(100vh - 2rem);
-  background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
   border-radius: 16px;
-  border: 1px solid #d0d5dd;
-  padding: 1rem;
+  padding: 1.25rem;
   display: grid;
   grid-template-rows: auto 1fr;
+  gap: 1.25rem;
+  background: radial-gradient(circle at top, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
+  border: 1px solid #d0d5dd;
+}
+
+.viewerHeaderModern {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 1rem;
 }
 
-.viewerHeader {
+.viewerHeaderModern h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+}
+
+.viewerHeaderModern p {
+  margin: 0.35rem 0 0;
+}
+
+.viewerMeta {
+  color: #344054;
+  font-size: 0.92rem;
+}
+
+.viewerCanvasModern {
+  display: grid;
+  place-items: center;
+}
+
+.dnaScroller {
+  width: min(1200px, 100%);
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  box-shadow: 0 16px 48px rgba(16, 24, 40, 0.1);
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.dnaScrollerHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
 }
 
-.viewerHeader h1 {
+.dnaScrollerHeader h2,
+.dnaScrollerHeader p {
   margin: 0;
-  font-size: 1.3rem;
 }
 
-.viewerHeader p {
-  margin: 0.25rem 0 0;
-}
-
-.viewerControls {
-  text-align: right;
-  display: grid;
-  gap: 0.25rem;
-}
-
-.viewerControls button {
-  margin-left: 0.5rem;
-}
-
-.viewerCanvas {
+.dnaViewport {
   position: relative;
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  min-height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f4f7 0%, #fcfcfd 20%, #fcfcfd 80%, #f2f4f7 100%);
+  border: 1px solid #eaecf0;
+  height: 92px;
+  cursor: grab;
 }
 
-.viewerCircular {
-  align-self: start;
-  justify-self: start;
+.dnaViewport:active {
+  cursor: grabbing;
 }
 
-.viewerLinearRegion {
-  align-self: end;
-  justify-self: center;
-  width: min(100%, 94vw);
+.dnaCenterLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: #2e90fa;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(46, 144, 250, 0.15);
+}
+
+.dnaTrack {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
   display: flex;
-  justify-content: center;
-  padding-bottom: 0.5rem;
+  align-items: center;
+  user-select: none;
+  touch-action: pan-y;
 }
 
-.viewerLinearScroll {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 0.5rem;
+.dnaBase {
+  width: 26px;
+  text-align: center;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
+
+.dnaBaseA { color: #f97066; }
+.dnaBaseC { color: #6172f3; }
+.dnaBaseG { color: #12b76a; }
+.dnaBaseT { color: #f79009; }
 
 @media (max-width: 900px) {
   .homeHero {
     padding: 2rem 1.25rem;
   }
 
-  .viewerHeader {
+  .viewerHeaderModern,
+  .dnaScrollerHeader {
     flex-direction: column;
+    align-items: flex-start;
   }
-
-  .viewerControls {
-    text-align: left;
-  }
-
-  .viewerControls button {
-    margin: 0.25rem 0.5rem 0 0;
-  }
-
-  .viewerCircular {
-    justify-self: center;
-  }
-}
-
-.linearSequenceViewer {
-  width: min(100%, 1200px);
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: stretch;
-  gap: 0;
-  background: #ffffff;
-  border: 1px solid #d0d5dd;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-  padding: 0.5rem 0;
-}
-
-.linearBaseColumn {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-}
-
-.baseBox {
-  width: 100%;
-  max-width: 20px;
-  min-height: 22px;
-  border: 1px solid #101828;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: clamp(7px, 0.5vw, 11px);
-  font-weight: 700;
-  line-height: 1;
-  color: #101828;
-}
-
-.activityBar {
-  width: min(8px, 80%);
-  background: #667085;
-  border-radius: 999px;
-}
-
-.activityBarTop {
-  transform-origin: bottom;
-}
-
-.activityBarBottom {
-  transform-origin: top;
 }

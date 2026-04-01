@@ -1,118 +1,49 @@
 "use client";
 
-import React, { useMemo, type CSSProperties } from "react";
-import SeqViz from "seqviz";
+import React, { useMemo, useState } from "react";
 
 import type { ViewerPayload } from "../../shared/types/ts";
-import LinearSequenceViewer, { type LinearSequenceViewerProps } from "./LinearSequenceViewer";
+import DnaCircularScroller from "./DnaCircularScroller";
 
 interface SeqVizLayoutProps {
   accession: string;
   payload: ViewerPayload | null;
   selectedCoordinate: number;
-  onShiftCenter: (offset: number) => void;
 }
 
 const DNA_PATTERN = "ACGTGCCGTA";
 
-const buildRegionSequence = (payload: ViewerPayload | null): string => {
+const buildSequence = (payload: ViewerPayload | null): string => {
   if (!payload) {
-    return DNA_PATTERN.repeat(80);
+    return DNA_PATTERN.repeat(400);
   }
 
-  const fallbackLength = Math.max(400, payload.visibleLength || 0);
-  const source = payload.bases.length > 0 ? payload.bases : DNA_PATTERN.repeat(Math.ceil(fallbackLength / DNA_PATTERN.length));
-  return source.slice(0, fallbackLength);
+  return payload.bases.length > 0 ? payload.bases : DNA_PATTERN.repeat(400);
 };
 
-const createVisibleSlice = (payload: ViewerPayload | null): LinearSequenceViewerProps => {
-  if (!payload) {
-    const placeholderLength = 1000;
-    return {
-      bases: DNA_PATTERN.repeat(Math.ceil(placeholderLength / DNA_PATTERN.length)).slice(0, placeholderLength),
-      forwardFn: "-".repeat(placeholderLength),
-      reverseFn: "-".repeat(placeholderLength),
-      forwardActivity: Array.from({ length: placeholderLength }, () => 0),
-      reverseActivity: Array.from({ length: placeholderLength }, () => 0)
-    };
-  }
-
-  const visibleLength = Math.max(1, payload.visibleLength || payload.visibleBases.length || payload.bases.length);
-  const bases = (payload.visibleBases || payload.bases || "").slice(0, visibleLength);
-  const forwardFn = (payload.visibleForwardFn || payload.forwardFn || "").slice(0, visibleLength);
-  const reverseFn = (payload.visibleReverseFn || payload.reverseFn || "").slice(0, visibleLength);
-
-  return {
-    bases,
-    forwardFn,
-    reverseFn,
-    forwardActivity: (payload.visibleForwardActivity.length > 0 ? payload.visibleForwardActivity : payload.forwardActivity).slice(0, visibleLength),
-    reverseActivity: (payload.visibleReverseActivity.length > 0 ? payload.visibleReverseActivity : payload.reverseActivity).slice(0, visibleLength)
-  };
-};
-
-const circularStyle: CSSProperties = {
-  width: "min(340px, 42vw)",
-  minWidth: "260px",
-  height: "min(340px, 42vw)",
-  backgroundColor: "#ffffff",
-  border: "1px solid #d0d5dd",
-  borderRadius: "12px",
-  padding: "0.75rem",
-  boxShadow: "0 10px 30px rgba(16, 24, 40, 0.08)"
-};
-
-export default function SeqVizLayout({ accession, payload, selectedCoordinate, onShiftCenter }: SeqVizLayoutProps) {
-  const sequence = useMemo(() => buildRegionSequence(payload), [payload]);
-  const visibleSlice = useMemo(() => createVisibleSlice(payload), [payload]);
+export default function SeqVizLayout({ accession, payload, selectedCoordinate }: SeqVizLayoutProps) {
+  const sequence = useMemo(() => buildSequence(payload), [payload]);
+  const [centerCoordinate, setCenterCoordinate] = useState(selectedCoordinate);
 
   return (
     <section className="viewerShell" aria-label="genome-viewer-shell">
-      <header className="viewerHeader">
+      <header className="viewerHeader viewerHeaderModern">
         <div>
-          <h1>Genome Viewer</h1>
+          <h1>Ouroboros DNA Viewer</h1>
           <p>Accession: {accession}</p>
         </div>
-        <div className="viewerControls">
-          <p aria-label="viewport-range">
-            Range: {payload ? `${payload.region.start.toLocaleString()}-${payload.region.end.toLocaleString()}` : "Loading..."}
-          </p>
-          <p>
-            Center: <strong>{selectedCoordinate.toLocaleString()}</strong>
-          </p>
-          <div>
-            <button type="button" onClick={() => onShiftCenter(-100)}>
-              Shift -100 bp
-            </button>
-            <button type="button" onClick={() => onShiftCenter(100)}>
-              Shift +100 bp
-            </button>
-          </div>
-        </div>
+        <p className="viewerMeta">
+          Genome length: <strong>{sequence.length.toLocaleString()} bp</strong> · Display center: <strong>{centerCoordinate.toLocaleString()}</strong>
+        </p>
       </header>
 
-      <div className="viewerCanvas" aria-label="seqviz-layout-root">
-        <div className="viewerCircular" aria-label="circular-map-panel">
-          <SeqViz
-            name={`${accession} circular`}
-            seq={sequence}
-            annotations={[]}
-            primers={[]}
-            viewer="circular"
-            showComplement={false}
-            showIndex
-            style={circularStyle}
-          />
-        </div>
-
-        <div className="viewerLinearRegion" aria-label="linear-map-panel">
-          <div className="viewerLinearScroll" aria-label="linear-map-scroll-container">
-            <LinearSequenceViewer {...visibleSlice} />
-          </div>
-        </div>
+      <div className="viewerCanvas viewerCanvasModern" aria-label="dna-viewer-layout">
+        <DnaCircularScroller
+          sequence={sequence}
+          initialCoordinate={selectedCoordinate}
+          onCenterCoordinateChange={setCenterCoordinate}
+        />
       </div>
     </section>
   );
 }
-
-export { createVisibleSlice };
