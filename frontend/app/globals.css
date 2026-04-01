@@ -132,7 +132,7 @@ body {
   overflow: hidden;
   border: 1px solid #d0d5dd;
   border-radius: 14px;
-  background: #101828;
+  background: #ffffff;
   padding: 1rem 0;
   cursor: grab;
   user-select: none;
@@ -169,12 +169,44 @@ body {
   font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.95rem;
   font-weight: 700;
+  background: #ffffff;
+  border-top: 4px solid #101828;
+  border-bottom: 4px solid #101828;
 }
 
-.dnaBase-A { color: #fda29b; }
-.dnaBase-C { color: #a4bcfd; }
-.dnaBase-G { color: #6ce9a6; }
-.dnaBase-T { color: #fecdca; }
+.dnaBase-A { color: #b42318; }
+.dnaBase-C { color: #175cd3; }
+.dnaBase-G { color: #067647; }
+.dnaBase-T { color: #93370d; }
+
+.featureLegend {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.featureLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #344054;
+}
+
+.featureSwatch {
+  width: 26px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid #1d2939;
+}
+
+.featureSwatch.promoter {
+  background: #2e90fa;
+}
+
+.featureSwatch.cds {
+  background: #12b76a;
+}
 
 .dnaHint {
   margin: 0;

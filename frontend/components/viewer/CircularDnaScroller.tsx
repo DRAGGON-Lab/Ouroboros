@@ -4,8 +4,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap/dist/gsap";
 import { Draggable } from "gsap/dist/Draggable";
 
+import type { SequenceAnnotation } from "../../shared/types/ts";
+
 interface CircularDnaScrollerProps {
   sequence: string;
+  annotations: SequenceAnnotation[];
 }
 
 const FALLBACK_SEQUENCE = "ACGT".repeat(120);
@@ -21,6 +24,17 @@ const normalizeSequence = (sequence: string): string => {
   return FALLBACK_SEQUENCE;
 };
 
+const getTopBorderColor = (index: number, annotations: SequenceAnnotation[]): string => {
+  const oneBasedIndex = index + 1;
+  const activeFeature = annotations.find((feature) => oneBasedIndex >= feature.start && oneBasedIndex <= feature.end);
+
+  if (!activeFeature) {
+    return "#101828";
+  }
+
+  return activeFeature.type === "promoter" ? "#2e90fa" : "#12b76a";
+};
+
 export const buildCircularTrack = (sequence: string): string => {
   const normalized = normalizeSequence(sequence);
   const minimumRepeats = Math.max(1, Math.ceil(MIN_RENDER_BASES / normalized.length));
@@ -29,7 +43,7 @@ export const buildCircularTrack = (sequence: string): string => {
   return expanded.repeat(3);
 };
 
-export default function CircularDnaScroller({ sequence }: CircularDnaScrollerProps) {
+export default function CircularDnaScroller({ sequence, annotations }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const currentXRef = useRef<number>(0);
@@ -37,6 +51,12 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
   const circularTrack = useMemo(() => buildCircularTrack(normalized), [normalized]);
+  const baseTopBorderColors = useMemo(
+    () => Array.from({ length: normalized.length }, (_, index) => getTopBorderColor(index, annotations)),
+    [annotations, normalized.length]
+  );
+  const promoterCount = useMemo(() => annotations.filter((item) => item.type === "promoter").length, [annotations]);
+  const cdsCount = useMemo(() => annotations.filter((item) => item.type === "CDS").length, [annotations]);
 
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
@@ -115,14 +135,32 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
         </p>
       </header>
 
+      <div className="featureLegend" aria-label="feature-legend">
+        <div className="featureLegendItem">
+          <span className="featureSwatch promoter" aria-hidden="true" />
+          <span>Promoter ({promoterCount})</span>
+        </div>
+        <div className="featureLegendItem">
+          <span className="featureSwatch cds" aria-hidden="true" />
+          <span>CDS ({cdsCount})</span>
+        </div>
+      </div>
+
       <div className="dnaViewport" ref={viewportRef} aria-label="dna-viewport">
         <div className="dnaCenterMarker" aria-hidden="true" />
         <div className="dnaTrack" ref={trackRef} aria-label="dna-track">
-          {Array.from(circularTrack).map((base, index) => (
-            <span key={`${index}-${base}`} className={`dnaBase dnaBase-${base}`}>
-              {base}
-            </span>
-          ))}
+          {Array.from(circularTrack).map((base, index) => {
+            const normalizedIndex = index % normalized.length;
+            return (
+              <span
+                key={`${index}-${base}`}
+                className={`dnaBase dnaBase-${base}`}
+                style={{ borderTopColor: baseTopBorderColors[normalizedIndex] ?? "#101828" }}
+              >
+                {base}
+              </span>
+            );
+          })}
         </div>
       </div>
 

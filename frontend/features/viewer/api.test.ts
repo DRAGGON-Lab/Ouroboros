@@ -138,7 +138,8 @@ describe("loadViewerSequence", () => {
         source: "example_plasmid",
         sequenceId: "example-plasmid",
         sequence: "ACGT",
-        length: 4
+        length: 4,
+        annotations: []
       })
     });
 
