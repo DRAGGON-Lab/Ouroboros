@@ -9,6 +9,7 @@ from app.schemas import (
     Strand,
     ViewerWindowResponse,
 )
+from app.services.viewer_window import WindowMetadata, build_viewer_window_encoding
 
 router = APIRouter()
 
@@ -98,20 +99,19 @@ def _clamp(value: int, lower: int, upper: int) -> int:
     return max(lower, min(value, upper))
 
 
-def _mock_function_track(start: int, end: int, *, reverse: bool = False) -> str:
-    codes = "PC--"
-    return "".join(
-        codes[((position - 1) + (1 if reverse else 0)) % len(codes)]
-        for position in range(start, end + 1)
-    )
-
-
-def _mock_activity_track(start: int, end: int, *, reverse: bool = False) -> list[float]:
-    values = [0.0, 0.5, 1.0, 1.5, 2.0]
-    return [
-        values[((position - 1) + (2 if reverse else 0)) % len(values)]
-        for position in range(start, end + 1)
-    ]
+def _viewer_annotations_in_range(start: int, end: int) -> list[dict[str, int | str | float]]:
+    annotations: list[dict[str, int | str | float]] = []
+    for feature in _annotations_in_range(start, end):
+        annotation = {
+            "start": feature.start,
+            "end": feature.end,
+            "strand": feature.strand.value,
+            "type": feature.type,
+        }
+        if feature.type.lower() == "promoter":
+            annotation["promoter_activity"] = 1.7
+        annotations.append(annotation)
+    return annotations
 
 
 @router.get(
@@ -193,6 +193,17 @@ def get_viewer_window(
 
     fetch_start = _clamp(visible_start - buffer_left, 1, GENOME_LENGTH)
     fetch_end = _clamp(visible_end + buffer_right, 1, GENOME_LENGTH)
+    sequence_slice = _mock_sequence(fetch_start, fetch_end)
+    encoding = build_viewer_window_encoding(
+        sequence_slice=sequence_slice,
+        annotations=_viewer_annotations_in_range(fetch_start, fetch_end),
+        metadata=WindowMetadata(
+            fetch_start=fetch_start,
+            fetch_end=fetch_end,
+            visible_start=visible_start,
+            visible_end=visible_end,
+        ),
+    )
 
     return ViewerWindowResponse(
         sequenceId=accession,
@@ -205,9 +216,9 @@ def get_viewer_window(
         visibleLength=visible_length,
         bufferLeft=buffer_left,
         bufferRight=buffer_right,
-        bases=_mock_sequence(fetch_start, fetch_end).replace("N", "-"),
-        forwardFn=_mock_function_track(fetch_start, fetch_end),
-        reverseFn=_mock_function_track(fetch_start, fetch_end, reverse=True),
-        forwardActivity=_mock_activity_track(fetch_start, fetch_end),
-        reverseActivity=_mock_activity_track(fetch_start, fetch_end, reverse=True),
+        bases=encoding["bases"],
+        forwardFn=encoding["forwardFn"],
+        reverseFn=encoding["reverseFn"],
+        forwardActivity=encoding["forwardActivity"],
+        reverseActivity=encoding["reverseActivity"],
     )
