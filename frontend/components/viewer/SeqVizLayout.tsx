@@ -4,6 +4,7 @@ import React, { useMemo, type CSSProperties } from "react";
 import SeqViz, { type SeqVizProps } from "seqviz";
 
 import type { ViewerPayload } from "../../shared/types/ts";
+import CircularOverview from "./CircularOverview";
 
 interface SeqVizLayoutProps {
   accession: string;
@@ -53,17 +54,6 @@ const createAnnotations = (payload: ViewerPayload | null): SeqVizProps["annotati
   }));
 };
 
-const circularStyle: CSSProperties = {
-  width: "min(340px, 42vw)",
-  minWidth: "260px",
-  height: "min(340px, 42vw)",
-  backgroundColor: "#ffffff",
-  border: "1px solid #d0d5dd",
-  borderRadius: "12px",
-  padding: "0.75rem",
-  boxShadow: "0 10px 30px rgba(16, 24, 40, 0.08)"
-};
-
 const linearStyle: CSSProperties = {
   width: "1200px",
   minHeight: "260px",
@@ -105,16 +95,13 @@ export default function SeqVizLayout({ accession, payload, selectedCoordinate, o
 
       <div className="viewerCanvas" aria-label="seqviz-layout-root">
         <div className="viewerCircular" aria-label="circular-map-panel">
-          <SeqViz
-            name={`${accession} circular`}
-            seq={sequence}
-            annotations={annotations}
-            primers={[]}
-            viewer="circular"
-            showComplement={false}
-            showIndex
-            style={circularStyle}
-          />
+          {payload ? (
+            <CircularOverview
+              genomeLength={payload.genomeLength}
+              visibleStart={payload.region.start}
+              visibleEnd={payload.region.end}
+            />
+          ) : null}
         </div>
 
         <div className="viewerLinearRegion" aria-label="linear-map-panel">

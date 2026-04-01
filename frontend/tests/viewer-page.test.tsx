@@ -22,7 +22,6 @@ describe("/viewer page", () => {
       expect(screen.getByLabelText(/viewport-range/i).textContent).toMatch(/Range:/);
     });
 
-    expect(screen.getByTestId("seqviz-circular")).toBeInTheDocument();
     expect(screen.getByTestId("seqviz-linear")).toBeInTheDocument();
   });
 });
