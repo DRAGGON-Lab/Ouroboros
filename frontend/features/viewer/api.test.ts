@@ -138,7 +138,8 @@ describe("loadViewerSequence", () => {
         source: "example_plasmid",
         sequenceId: "example-plasmid",
         sequence: "ACGT",
-        length: 4
+        length: 4,
+        annotations: []
       })
     });
 
@@ -148,5 +149,6 @@ describe("loadViewerSequence", () => {
 
     expect(fetchSpy).toHaveBeenCalledWith("/api/v1/viewer/sequence?source=example_plasmid");
     expect(payload.length).toBe(4);
+    expect(payload.annotations).toEqual([]);
   });
 });

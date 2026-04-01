@@ -57,4 +57,18 @@ export interface ViewerSequenceResponse {
   sequenceId: string;
   sequence: string;
   length: number;
+  annotations: SequenceAnnotation[];
+}
+
+export type SequenceAnnotationType = "promoter" | "CDS";
+
+export interface SequenceAnnotation {
+  id: string;
+  type: SequenceAnnotationType;
+  start: number;
+  end: number;
+  strand: "forward" | "reverse";
+  label: string;
+  annotation_source: "curated" | "inferred";
+  activity_type: "measured" | "predicted";
 }

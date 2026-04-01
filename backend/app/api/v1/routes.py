@@ -10,7 +10,11 @@ from app.schemas import (
     ViewerSequenceResponse,
     ViewerWindowResponse,
 )
-from app.services.sequence_loader import load_example_plasmid_sequence, load_example_sequence
+from app.services.sequence_loader import (
+    build_mock_processed_annotations,
+    load_example_plasmid_sequence,
+    load_example_sequence,
+)
 from app.services.viewer_window import WindowMetadata, build_viewer_window_encoding
 
 router = APIRouter()
@@ -255,4 +259,5 @@ def get_viewer_sequence(
         sequenceId=sequence_id,
         sequence=sequence,
         length=len(sequence),
+        annotations=build_mock_processed_annotations(sequence),
     )

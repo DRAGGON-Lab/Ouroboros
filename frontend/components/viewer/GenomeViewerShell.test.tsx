@@ -11,15 +11,18 @@ const { loadViewerSequenceMock } = vi.hoisted(() => ({
 vi.mock("../../features/viewer/api", () => ({
   loadViewerSequence: loadViewerSequenceMock
 }));
+vi.mock("./CircularDnaScroller", () => ({
+  default: () => <div aria-label="mock-circular-dna-scroller" />
+}));
 
-vi.mock("gsap/dist/gsap", () => ({
+vi.mock("gsap", () => ({
   default: {
     registerPlugin: vi.fn(),
     set: vi.fn()
   }
 }));
 
-vi.mock("gsap/dist/Draggable", () => ({
+vi.mock("gsap/Draggable", () => ({
   Draggable: {
     create: vi.fn(() => [{ update: vi.fn(), kill: vi.fn() }])
   }

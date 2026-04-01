@@ -73,3 +73,4 @@ class ViewerSequenceResponse(BaseModel):
     sequenceId: str
     sequence: str = Field(pattern=r"^[ACGTN-]+$")
     length: int = Field(ge=1)
+    annotations: list[AnnotationFeature]

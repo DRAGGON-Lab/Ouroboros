@@ -8,14 +8,14 @@ const { gsapSet } = vi.hoisted(() => ({
   gsapSet: vi.fn()
 }));
 
-vi.mock("gsap/dist/gsap", () => ({
+vi.mock("gsap", () => ({
   default: {
     registerPlugin: vi.fn(),
     set: gsapSet
   }
 }));
 
-vi.mock("gsap/dist/Draggable", () => ({
+vi.mock("gsap/Draggable", () => ({
   Draggable: {
     create: vi.fn(() => [
       {
@@ -46,12 +46,35 @@ describe("buildCircularTrack", () => {
 
 describe("CircularDnaScroller", () => {
   it("routes window horizontal wheel events to DNA movement", () => {
-    render(<CircularDnaScroller sequence="ACGTACGT" />);
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
     screen.getByLabelText("dna-track");
 
     const callsBeforeWheel = gsapSet.mock.calls.length;
     fireEvent.wheel(window, { deltaX: 80 });
 
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
+  });
+
+  it("renders annotation mini map labels", () => {
+    render(
+      <CircularDnaScroller
+        sequence="ACGTACGT"
+        annotations={[
+          {
+            id: "mock_promoter_1",
+            type: "promoter",
+            start: 1,
+            end: 4,
+            strand: "forward",
+            label: "Promoter 1",
+            annotation_source: "inferred",
+            activity_type: "predicted"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByLabelText("feature-mini-map")).toBeInTheDocument();
+    expect(screen.getByText("Promoter 1")).toBeInTheDocument();
   });
 });

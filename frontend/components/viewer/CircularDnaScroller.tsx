@@ -1,16 +1,22 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import gsap from "gsap/dist/gsap";
-import { Draggable } from "gsap/dist/Draggable";
+import gsap from "gsap";
+import { Draggable } from "gsap/Draggable";
+import type { SequenceAnnotation } from "../../shared/types/ts";
 
 interface CircularDnaScrollerProps {
   sequence: string;
+  annotations: SequenceAnnotation[];
 }
 
 const FALLBACK_SEQUENCE = "ACGT".repeat(120);
 const MIN_RENDER_BASES = 240;
 const BASE_TILE_PX = 22;
+const FEATURE_COLORS: Record<SequenceAnnotation["type"], string> = {
+  promoter: "#2e90fa",
+  CDS: "#12b76a"
+};
 
 const normalizeSequence = (sequence: string): string => {
   const compact = sequence.replace(/\s+/g, "").toUpperCase();
@@ -29,7 +35,15 @@ export const buildCircularTrack = (sequence: string): string => {
   return expanded.repeat(3);
 };
 
-export default function CircularDnaScroller({ sequence }: CircularDnaScrollerProps) {
+const inFeature = (position: number, annotation: SequenceAnnotation, sequenceLength: number): boolean => {
+  if (annotation.start <= annotation.end) {
+    return position >= annotation.start && position <= annotation.end;
+  }
+
+  return position >= annotation.start || position <= Math.min(annotation.end, sequenceLength);
+};
+
+export default function CircularDnaScroller({ sequence, annotations }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const currentXRef = useRef<number>(0);
@@ -37,6 +51,28 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
   const circularTrack = useMemo(() => buildCircularTrack(normalized), [normalized]);
+  const perBaseTopTrack = useMemo(
+    () =>
+      Array.from({ length: normalized.length }, (_, index) => {
+        const position = index + 1;
+        const matchingFeature = annotations.find((annotation) =>
+          inFeature(position, annotation, normalized.length)
+        );
+
+        return matchingFeature ? FEATURE_COLORS[matchingFeature.type] : "#101828";
+      }),
+    [annotations, normalized.length]
+  );
+  const topTrackColors = useMemo(() => [...perBaseTopTrack, ...perBaseTopTrack, ...perBaseTopTrack], [perBaseTopTrack]);
+  const featureMapEntries = useMemo(
+    () =>
+      annotations.slice(0, 12).map((annotation) => ({
+        ...annotation,
+        startPct: (annotation.start / normalized.length) * 100,
+        widthPct: (Math.max(1, annotation.end - annotation.start + 1) / normalized.length) * 100
+      })),
+    [annotations, normalized.length]
+  );
 
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
@@ -118,13 +154,41 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
       <div className="dnaViewport" ref={viewportRef} aria-label="dna-viewport">
         <div className="dnaCenterMarker" aria-hidden="true" />
         <div className="dnaTrack" ref={trackRef} aria-label="dna-track">
-          {Array.from(circularTrack).map((base, index) => (
-            <span key={`${index}-${base}`} className={`dnaBase dnaBase-${base}`}>
-              {base}
+          {Array.from(circularTrack).map((base, index) => {
+            const topLineColor = topTrackColors[index] ?? "#101828";
+            return (
+              <span key={`${index}-${base}`} className={`dnaBase dnaBase-${base}`}>
+                <span className="dnaTopBorder" style={{ backgroundColor: topLineColor }} aria-hidden="true" />
+                <span>{base}</span>
+                <span className="dnaBottomBorder" aria-hidden="true" />
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      <section className="featureMiniMap" aria-label="feature-mini-map">
+        <p>Annotation map</p>
+        <div className="featureMiniMapTrack">
+          {featureMapEntries.map((annotation) => (
+            <div
+              key={annotation.id}
+              className={`featureMiniMapSegment featureMiniMapSegment-${annotation.type}`}
+              style={{
+                left: `${annotation.startPct}%`,
+                width: `${annotation.widthPct}%`
+              }}
+              title={`${annotation.label} (${annotation.type})`}
+            />
+          ))}
+        </div>
+        <div className="featureMiniMapLabels">
+          {featureMapEntries.map((annotation) => (
+            <span key={`${annotation.id}-label`}>
+              {annotation.label}
             </span>
           ))}
         </div>
-      </div>
+      </section>
 
       <p className="dnaHint">Drag DNA, or use horizontal wheel/shift+wheel anywhere in the viewer window.</p>
     </section>

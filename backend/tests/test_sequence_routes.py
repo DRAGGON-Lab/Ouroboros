@@ -15,6 +15,7 @@ def test_get_example_sequence_default() -> None:
     assert payload["sequenceId"] == "example-sequence"
     assert payload["length"] == 1_011
     assert len(payload["sequence"]) == 1_011
+    assert payload["annotations"] == []
 
 
 def test_get_example_plasmid_sequence() -> None:
@@ -26,6 +27,16 @@ def test_get_example_plasmid_sequence() -> None:
     assert payload["sequenceId"] == "example-plasmid"
     assert payload["length"] == len(payload["sequence"])
     assert payload["length"] > 1_011
+    assert isinstance(payload["annotations"], list)
+
+
+def test_get_example_plasmid_includes_mock_cds_annotations() -> None:
+    response = client.get("/api/v1/viewer/sequence", params={"source": "example_plasmid"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    cds_features = [feature for feature in payload["annotations"] if feature["type"] == "CDS"]
+    assert len(cds_features) >= 2
 
 
 def test_get_sequence_invalid_source_returns_400() -> None:

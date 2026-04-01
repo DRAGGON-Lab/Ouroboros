@@ -132,7 +132,7 @@ body {
   overflow: hidden;
   border: 1px solid #d0d5dd;
   border-radius: 14px;
-  background: #101828;
+  background: #ffffff;
   padding: 1rem 0;
   cursor: grab;
   user-select: none;
@@ -165,16 +165,74 @@ body {
 
 .dnaBase {
   width: 22px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.95rem;
   font-weight: 700;
+  color: #101828;
 }
 
-.dnaBase-A { color: #fda29b; }
-.dnaBase-C { color: #a4bcfd; }
-.dnaBase-G { color: #6ce9a6; }
-.dnaBase-T { color: #fecdca; }
+.dnaTopBorder,
+.dnaBottomBorder {
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: #101828;
+}
+
+.dnaTopBorder {
+  margin-bottom: 3px;
+}
+
+.dnaBottomBorder {
+  margin-top: 3px;
+}
+
+.dnaBase-A,
+.dnaBase-C,
+.dnaBase-G,
+.dnaBase-T { color: #101828; }
+
+.featureMiniMap {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.featureMiniMap p {
+  margin: 0;
+  color: #344054;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.featureMiniMapTrack {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #101828;
+  overflow: hidden;
+}
+
+.featureMiniMapSegment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.featureMiniMapSegment-promoter { background: #2e90fa; }
+.featureMiniMapSegment-CDS { background: #12b76a; }
+
+.featureMiniMapLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  font-size: 0.76rem;
+  color: #475467;
+}
 
 .dnaHint {
   margin: 0;

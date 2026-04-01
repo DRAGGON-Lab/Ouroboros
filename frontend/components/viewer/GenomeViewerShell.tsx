@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 
 import { loadViewerSequence } from "../../features/viewer/api";
-import type { ViewerSequenceSource } from "../../shared/types/ts";
+import type { SequenceAnnotation, ViewerSequenceSource } from "../../shared/types/ts";
 import CircularDnaScroller from "./CircularDnaScroller";
 
 const EXAMPLE_SEQUENCE_SOURCE: ViewerSequenceSource = "example_sequence";
@@ -15,6 +15,7 @@ const DEFAULT_EXAMPLE_SEQUENCE = ("ACGT".repeat(Math.ceil(EXAMPLE_SEQUENCE_LENGT
 export default function GenomeViewerShell() {
   const [selectedSource, setSelectedSource] = useState<ViewerSequenceSource>(EXAMPLE_SEQUENCE_SOURCE);
   const [sequence, setSequence] = useState<string>(DEFAULT_EXAMPLE_SEQUENCE);
+  const [annotations, setAnnotations] = useState<SequenceAnnotation[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string>("");
 
@@ -32,6 +33,7 @@ export default function GenomeViewerShell() {
 
     if (nextSource === EXAMPLE_SEQUENCE_SOURCE) {
       setSequence(DEFAULT_EXAMPLE_SEQUENCE);
+      setAnnotations([]);
       return;
     }
 
@@ -39,9 +41,11 @@ export default function GenomeViewerShell() {
     try {
       const payload = await loadViewerSequence(nextSource);
       setSequence(payload.sequence);
+      setAnnotations(payload.annotations);
     } catch {
       setSelectedSource(EXAMPLE_SEQUENCE_SOURCE);
       setSequence(DEFAULT_EXAMPLE_SEQUENCE);
+      setAnnotations([]);
       setLoadError("Could not load example plasmid from backend. Showing example sequence instead.");
     } finally {
       setIsLoading(false);
@@ -69,7 +73,7 @@ export default function GenomeViewerShell() {
         <p aria-live="polite">{statusMessage}</p>
       </section>
 
-      <CircularDnaScroller sequence={sequence} />
+      <CircularDnaScroller sequence={sequence} annotations={annotations} />
     </main>
   );
 }
