@@ -80,8 +80,7 @@ export const loadViewerPayload = async (
   });
 
   try {
-    const endpoint = new URL(`/api/v1/viewer/window?${query.toString()}`, "http://localhost");
-    const response = await fetch(endpoint.toString());
+    const response = await fetch(`/api/v1/viewer/window?${query.toString()}`);
 
     if (!response.ok) {
       throw new Error(`Viewer payload request failed with status ${response.status}`);

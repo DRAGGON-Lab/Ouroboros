@@ -40,18 +40,8 @@ const buildRegionSequence = (payload: ViewerPayload | null): string => {
   return DNA_PATTERN.repeat(Math.ceil(span / DNA_PATTERN.length)).slice(0, span);
 };
 
-const createAnnotations = (payload: ViewerPayload | null): SeqVizProps["annotations"] => {
-  if (!payload) {
-    return [];
-  }
-
-  return payload.features.map((feature, index) => ({
-    start: index * 80 + 20,
-    end: index * 80 + 70,
-    name: feature.label,
-    direction: feature.strand === "forward" ? 1 : -1,
-    color: feature.strand === "forward" ? "#2563eb" : "#7c3aed"
-  }));
+const createAnnotations = (): SeqVizProps["annotations"] => {
+  return [];
 };
 
 const linearStyle: CSSProperties = {
@@ -66,7 +56,7 @@ const linearStyle: CSSProperties = {
 
 export default function SeqVizLayout({ accession, payload, selectedCoordinate, onShiftCenter }: SeqVizLayoutProps) {
   const sequence = useMemo(() => buildRegionSequence(payload), [payload]);
-  const annotations = useMemo(() => createAnnotations(payload), [payload]);
+  const annotations = useMemo(() => createAnnotations(), []);
 
   return (
     <section className="viewerShell" aria-label="genome-viewer-shell">
