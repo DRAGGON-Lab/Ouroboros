@@ -23,6 +23,6 @@ describe("/viewer page", () => {
     });
 
     expect(screen.getByTestId("seqviz-circular")).toBeInTheDocument();
-    expect(screen.getByTestId("seqviz-linear")).toBeInTheDocument();
+    expect(screen.getByLabelText(/linear-sequence-viewer/i)).toBeInTheDocument();
   });
 });

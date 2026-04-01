@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useMemo, type CSSProperties } from "react";
-import SeqViz, { type SeqVizProps } from "seqviz";
+import SeqViz from "seqviz";
 
 import type { ViewerPayload } from "../../shared/types/ts";
+import LinearSequenceViewer, { type LinearSequenceViewerProps } from "./LinearSequenceViewer";
 
 interface SeqVizLayoutProps {
   accession: string;
@@ -14,43 +15,40 @@ interface SeqVizLayoutProps {
 
 const DNA_PATTERN = "ACGTGCCGTA";
 
-export const calculateRegionSpan = (payload: ViewerPayload): number => {
-  const { start, end, center } = payload.region;
-  const genomeLength = payload.genomeLength;
-
-  const distanceFromStartToCenter = (center - start + genomeLength) % genomeLength;
-  const distanceFromCenterToEnd = (end - center + genomeLength) % genomeLength;
-  const regionSpan = (end - start + genomeLength) % genomeLength;
-  const span = Math.max(
-    400,
-    regionSpan + 1,
-    (distanceFromStartToCenter + distanceFromCenterToEnd) + 1
-  );
-
-  return Math.min(genomeLength, span);
-};
-
 const buildRegionSequence = (payload: ViewerPayload | null): string => {
   if (!payload) {
     return DNA_PATTERN.repeat(80);
   }
 
-  const span = calculateRegionSpan(payload);
-  return DNA_PATTERN.repeat(Math.ceil(span / DNA_PATTERN.length)).slice(0, span);
+  const fallbackLength = Math.max(400, payload.visibleLength || 0);
+  const source = payload.bases.length > 0 ? payload.bases : DNA_PATTERN.repeat(Math.ceil(fallbackLength / DNA_PATTERN.length));
+  return source.slice(0, fallbackLength);
 };
 
-const createAnnotations = (payload: ViewerPayload | null): SeqVizProps["annotations"] => {
+const createVisibleSlice = (payload: ViewerPayload | null): LinearSequenceViewerProps => {
   if (!payload) {
-    return [];
+    const placeholderLength = 1000;
+    return {
+      bases: DNA_PATTERN.repeat(Math.ceil(placeholderLength / DNA_PATTERN.length)).slice(0, placeholderLength),
+      forwardFn: "-".repeat(placeholderLength),
+      reverseFn: "-".repeat(placeholderLength),
+      forwardActivity: Array.from({ length: placeholderLength }, () => 0),
+      reverseActivity: Array.from({ length: placeholderLength }, () => 0)
+    };
   }
 
-  return payload.features.map((feature, index) => ({
-    start: index * 80 + 20,
-    end: index * 80 + 70,
-    name: feature.label,
-    direction: feature.strand === "forward" ? 1 : -1,
-    color: feature.strand === "forward" ? "#2563eb" : "#7c3aed"
-  }));
+  const visibleLength = Math.max(1, payload.visibleLength || payload.visibleBases.length || payload.bases.length);
+  const bases = (payload.visibleBases || payload.bases || "").slice(0, visibleLength);
+  const forwardFn = (payload.visibleForwardFn || payload.forwardFn || "").slice(0, visibleLength);
+  const reverseFn = (payload.visibleReverseFn || payload.reverseFn || "").slice(0, visibleLength);
+
+  return {
+    bases,
+    forwardFn,
+    reverseFn,
+    forwardActivity: (payload.visibleForwardActivity.length > 0 ? payload.visibleForwardActivity : payload.forwardActivity).slice(0, visibleLength),
+    reverseActivity: (payload.visibleReverseActivity.length > 0 ? payload.visibleReverseActivity : payload.reverseActivity).slice(0, visibleLength)
+  };
 };
 
 const circularStyle: CSSProperties = {
@@ -64,19 +62,9 @@ const circularStyle: CSSProperties = {
   boxShadow: "0 10px 30px rgba(16, 24, 40, 0.08)"
 };
 
-const linearStyle: CSSProperties = {
-  width: "1200px",
-  minHeight: "260px",
-  backgroundColor: "#ffffff",
-  border: "1px solid #d0d5dd",
-  borderRadius: "12px",
-  padding: "0.75rem",
-  boxShadow: "0 10px 30px rgba(16, 24, 40, 0.08)"
-};
-
 export default function SeqVizLayout({ accession, payload, selectedCoordinate, onShiftCenter }: SeqVizLayoutProps) {
   const sequence = useMemo(() => buildRegionSequence(payload), [payload]);
-  const annotations = useMemo(() => createAnnotations(payload), [payload]);
+  const visibleSlice = useMemo(() => createVisibleSlice(payload), [payload]);
 
   return (
     <section className="viewerShell" aria-label="genome-viewer-shell">
@@ -108,7 +96,7 @@ export default function SeqVizLayout({ accession, payload, selectedCoordinate, o
           <SeqViz
             name={`${accession} circular`}
             seq={sequence}
-            annotations={annotations}
+            annotations={[]}
             primers={[]}
             viewer="circular"
             showComplement={false}
@@ -119,20 +107,12 @@ export default function SeqVizLayout({ accession, payload, selectedCoordinate, o
 
         <div className="viewerLinearRegion" aria-label="linear-map-panel">
           <div className="viewerLinearScroll" aria-label="linear-map-scroll-container">
-            <SeqViz
-              name={`${accession} linear`}
-              seq={sequence}
-              annotations={annotations}
-              primers={[]}
-              viewer="linear"
-              showComplement
-              showIndex
-              zoom={{ linear: 85 }}
-              style={linearStyle}
-            />
+            <LinearSequenceViewer {...visibleSlice} />
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+export { createVisibleSlice };
