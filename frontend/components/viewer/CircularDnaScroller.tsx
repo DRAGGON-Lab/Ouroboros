@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import gsap from "gsap";
-import { Draggable } from "gsap/Draggable";
+import gsap from "gsap/dist/gsap";
+import { Draggable } from "gsap/dist/Draggable";
 
 interface CircularDnaScrollerProps {
   sequence: string;
@@ -32,6 +32,7 @@ export const buildCircularTrack = (sequence: string): string => {
 export default function CircularDnaScroller({ sequence }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const currentXRef = useRef<number>(0);
   const [currentPosition, setCurrentPosition] = useState(1);
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
@@ -60,8 +61,14 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
       setCurrentPosition(baseIndex + 1);
     };
 
-    gsap.set(trackRef.current, { x: midpoint });
-    updatePositionLabel(midpoint);
+    const applyWrappedX = (rawX: number): void => {
+      const wrappedX = clampToCircle(rawX);
+      currentXRef.current = wrappedX;
+      gsap.set(trackRef.current, { x: wrappedX });
+      updatePositionLabel(wrappedX);
+    };
+
+    applyWrappedX(midpoint);
 
     const draggable = Draggable.create(trackRef.current, {
       type: "x",
@@ -71,18 +78,30 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
       },
       inertia: false,
       onDrag() {
-        const nextX = clampToCircle(this.x);
-        gsap.set(trackRef.current, { x: nextX });
-        updatePositionLabel(nextX);
+        applyWrappedX(this.x);
       },
       onThrowUpdate() {
-        const nextX = clampToCircle(this.x);
-        gsap.set(trackRef.current, { x: nextX });
-        updatePositionLabel(nextX);
+        applyWrappedX(this.x);
       }
     })[0];
 
+    const handleWindowWheel = (event: WheelEvent): void => {
+      const isHorizontalGesture = Math.abs(event.deltaX) > 0 || event.shiftKey;
+
+      if (!isHorizontalGesture) {
+        return;
+      }
+
+      event.preventDefault();
+      const delta = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
+      applyWrappedX(currentXRef.current - delta);
+      draggable.update();
+    };
+
+    window.addEventListener("wheel", handleWindowWheel, { passive: false });
+
     return () => {
+      window.removeEventListener("wheel", handleWindowWheel);
       draggable.kill();
     };
   }, [normalized]);
@@ -107,7 +126,7 @@ export default function CircularDnaScroller({ sequence }: CircularDnaScrollerPro
         </div>
       </div>
 
-      <p className="dnaHint">Drag left or right to scroll through the circular DNA sequence.</p>
+      <p className="dnaHint">Drag DNA, or use horizontal wheel/shift+wheel anywhere in the viewer window.</p>
     </section>
   );
 }

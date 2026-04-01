@@ -7,11 +7,13 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   min-height: 100vh;
   background: #ffffff;
   color: #101828;
+  overflow-x: hidden;
 }
 
 .homeCanvas {
@@ -101,6 +103,7 @@ body {
   padding: 1rem 0;
   cursor: grab;
   user-select: none;
+  touch-action: pan-y;
 }
 
 .dnaViewport:active {

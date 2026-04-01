@@ -4,14 +4,14 @@ import { vi } from "vitest";
 
 import ViewerPage from "../app/viewer/page";
 
-vi.mock("gsap", () => ({
+vi.mock("gsap/dist/gsap", () => ({
   default: {
     registerPlugin: vi.fn(),
     set: vi.fn()
   }
 }));
 
-vi.mock("gsap/Draggable", () => ({
+vi.mock("gsap/dist/Draggable", () => ({
   Draggable: {
     create: vi.fn(() => [{ kill: vi.fn() }])
   }
