@@ -1,84 +1,118 @@
-import type { FeatureBlock, NucleotideBlock, ViewerPayload, ViewerRegion } from "../../shared/types/ts";
+import type { ViewerPayload, ViewerWindowResponse } from "../../shared/types/ts";
 
-const WINDOW_RADIUS = 250;
-const VIEWPORT_SPAN = WINDOW_RADIUS * 2 + 1;
-const GENOME_LENGTH = 4_641_652;
-
-const normalizeCoordinate = (coordinate: number): number => {
-  const shifted = Math.trunc(coordinate) - 1;
-  const wrapped = ((shifted % GENOME_LENGTH) + GENOME_LENGTH) % GENOME_LENGTH;
-  return wrapped + 1;
-};
-
-const coordinateAtOffset = (anchor: number, offset: number): number => normalizeCoordinate(anchor + offset);
-
-const createCenteredRegion = (coordinate: number): ViewerRegion => {
-  const center = normalizeCoordinate(coordinate);
+export const getVisibleSliceIndexes = (
+  visibleStart: number,
+  visibleEnd: number,
+  fetchStart: number
+): { startIndex: number; endIndexExclusive: number } => {
+  const startIndex = Math.max(0, visibleStart - fetchStart);
+  const endIndexExclusive = Math.max(startIndex, visibleEnd - fetchStart + 1);
 
   return {
-    center,
-    start: coordinateAtOffset(center, -WINDOW_RADIUS),
-    end: coordinateAtOffset(center, WINDOW_RADIUS)
+    startIndex,
+    endIndexExclusive
   };
 };
 
-const buildNucleotideBlocks = (region: ViewerRegion): NucleotideBlock[] => {
-  const firstSegmentLength = Math.floor(VIEWPORT_SPAN / 2);
+export const buildVisibleWindow = (
+  windowPayload: ViewerWindowResponse
+): Pick<
+  ViewerPayload,
+  | "visibleBases"
+  | "visibleForwardFn"
+  | "visibleReverseFn"
+  | "visibleForwardActivity"
+  | "visibleReverseActivity"
+> => {
+  const { startIndex, endIndexExclusive } = getVisibleSliceIndexes(
+    windowPayload.visibleStart,
+    windowPayload.visibleEnd,
+    windowPayload.fetchStart
+  );
 
-  return [
-    {
-      id: "nt-forward-1",
-      start: region.start,
-      end: coordinateAtOffset(region.start, firstSegmentLength - 1),
-      strand: "forward",
-      label: "Nucleotide window A"
-    },
-    {
-      id: "nt-reverse-1",
-      start: coordinateAtOffset(region.start, firstSegmentLength),
-      end: coordinateAtOffset(region.start, VIEWPORT_SPAN - 1),
-      strand: "reverse",
-      label: "Nucleotide window B"
-    }
-  ];
+  return {
+    visibleBases: windowPayload.bases.slice(startIndex, endIndexExclusive),
+    visibleForwardFn: windowPayload.forwardFn.slice(startIndex, endIndexExclusive),
+    visibleReverseFn: windowPayload.reverseFn.slice(startIndex, endIndexExclusive),
+    visibleForwardActivity: windowPayload.forwardActivity.slice(startIndex, endIndexExclusive),
+    visibleReverseActivity: windowPayload.reverseActivity.slice(startIndex, endIndexExclusive)
+  };
 };
 
-const buildFeatureBlocks = (region: ViewerRegion): FeatureBlock[] => {
-  const quarterSpan = Math.floor(VIEWPORT_SPAN / 4);
+const buildFallbackPayload = (accession: string, selectedCoordinate: number): ViewerPayload => {
+  const center = Math.max(1, Math.trunc(selectedCoordinate));
 
-  return [
-    {
-      id: "feature-gene-a",
-      start: coordinateAtOffset(region.start, quarterSpan),
-      end: coordinateAtOffset(region.start, quarterSpan * 2 - 1),
-      strand: "forward",
-      type: "gene",
-      label: "Placeholder gene A",
-      source: "curated"
+  return {
+    accession,
+    genomeLength: 1,
+    region: {
+      start: center,
+      end: center,
+      center
     },
-    {
-      id: "feature-reg-b",
-      start: coordinateAtOffset(region.start, quarterSpan * 2),
-      end: coordinateAtOffset(region.start, quarterSpan * 3 - 1),
-      strand: "reverse",
-      type: "regulatory",
-      label: "Placeholder element B",
-      source: "inferred"
-    }
-  ];
+    fetchRange: {
+      start: center,
+      end: center
+    },
+    visibleLength: 0,
+    bufferLeft: 0,
+    bufferRight: 0,
+    bases: "",
+    forwardFn: "",
+    reverseFn: "",
+    forwardActivity: [],
+    reverseActivity: [],
+    visibleBases: "",
+    visibleForwardFn: "",
+    visibleReverseFn: "",
+    visibleForwardActivity: [],
+    visibleReverseActivity: []
+  };
 };
 
 export const loadViewerPayload = async (
   accession: string,
   selectedCoordinate: number
 ): Promise<ViewerPayload> => {
-  const region = createCenteredRegion(selectedCoordinate);
-
-  return Promise.resolve({
+  const query = new URLSearchParams({
     accession,
-    genomeLength: GENOME_LENGTH,
-    region,
-    nucleotides: buildNucleotideBlocks(region),
-    features: buildFeatureBlocks(region)
+    center: String(Math.max(1, Math.trunc(selectedCoordinate)))
   });
+
+  try {
+    const endpoint = new URL(`/api/v1/viewer/window?${query.toString()}`, "http://localhost");
+    const response = await fetch(endpoint.toString());
+
+    if (!response.ok) {
+      throw new Error(`Viewer payload request failed with status ${response.status}`);
+    }
+
+    const payload = (await response.json()) as ViewerWindowResponse;
+    const visibleWindow = buildVisibleWindow(payload);
+
+    return {
+      accession: payload.sequenceId,
+      genomeLength: payload.genomeLength,
+      region: {
+        start: payload.visibleStart,
+        end: payload.visibleEnd,
+        center: payload.requestedCenter
+      },
+      fetchRange: {
+        start: payload.fetchStart,
+        end: payload.fetchEnd
+      },
+      visibleLength: payload.visibleLength,
+      bufferLeft: payload.bufferLeft,
+      bufferRight: payload.bufferRight,
+      bases: payload.bases,
+      forwardFn: payload.forwardFn,
+      reverseFn: payload.reverseFn,
+      forwardActivity: payload.forwardActivity,
+      reverseActivity: payload.reverseActivity,
+      ...visibleWindow
+    };
+  } catch {
+    return buildFallbackPayload(accession, selectedCoordinate);
+  }
 };
