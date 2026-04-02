@@ -46,12 +46,37 @@ describe("buildCircularTrack", () => {
 
 describe("CircularDnaScroller", () => {
   it("routes window horizontal wheel events to DNA movement", () => {
-    render(<CircularDnaScroller sequence="ACGTACGT" />);
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
     screen.getByLabelText("dna-track");
 
     const callsBeforeWheel = gsapSet.mock.calls.length;
     fireEvent.wheel(window, { deltaX: 80 });
 
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
+  });
+});
+
+
+describe("feature highlighting", () => {
+  it("colors promoter regions on the top border", () => {
+    render(
+      <CircularDnaScroller
+        sequence="ACGTACGT"
+        annotations={[{
+          id: "promoter_1",
+          type: "promoter",
+          label: "promoter_match_1",
+          start: 2,
+          end: 3,
+          strand: "forward",
+          annotation_source: "inferred",
+          activity_type: "predicted"
+        }]}
+      />
+    );
+
+    const track = screen.getByLabelText("dna-track");
+    const spans = track.querySelectorAll("span.dnaBase");
+    expect((spans[1] as HTMLSpanElement).style.borderTopColor).toBe("rgb(46, 144, 250)");
   });
 });
