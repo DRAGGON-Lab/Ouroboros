@@ -55,12 +55,12 @@ describe("CircularDnaScroller", () => {
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
   });
 
-  it("renders a rotating circular DNA track", () => {
+  it("renders a circular DNA track with a visible-range overlay", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
 
     const circularTrack = screen.getByLabelText("dna-circular-track");
     expect(circularTrack).toBeInTheDocument();
-    expect(circularTrack).toHaveStyle({ transform: "rotate(0deg)" });
+    expect(circularTrack.querySelector(".dnaCircularSelectionArc")).toBeTruthy();
   });
 });
 
@@ -86,5 +86,28 @@ describe("feature highlighting", () => {
     const track = screen.getByLabelText("dna-track");
     const spans = track.querySelectorAll("span.dnaBase");
     expect((spans[1] as HTMLSpanElement).style.borderTopColor).toBe("rgb(46, 144, 250)");
+  });
+
+  it("renders forward-strand feature coloring on the circular top strand", () => {
+    render(
+      <CircularDnaScroller
+        sequence="ACGTACGT"
+        annotations={[{
+          id: "cds_forward_1",
+          type: "CDS",
+          label: "cds_match_1",
+          start: 1,
+          end: 4,
+          strand: "forward",
+          annotation_source: "inferred",
+          activity_type: "predicted"
+        }]}
+      />
+    );
+
+    const circularTrack = screen.getByLabelText("dna-circular-track");
+    const featureArc = circularTrack.querySelector(".dnaCircularFeatureArc") as SVGPathElement | null;
+    expect(featureArc).toBeTruthy();
+    expect(featureArc?.style.stroke).toBe("#12b76a");
   });
 });

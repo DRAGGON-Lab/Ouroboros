@@ -240,21 +240,27 @@ body {
 }
 
 .dnaCircularTrack {
-  position: relative;
   width: min(60vw, 480px);
   aspect-ratio: 1 / 1;
-  transition: transform 0.18s linear;
 }
 
-.dnaCircularLine {
-  position: absolute;
-  border: 6px solid #101828;
-  border-radius: 999px;
-  inset: 0;
+.dnaCircularBaseRing {
+  fill: none;
+  stroke: #101828;
+  stroke-width: 8;
 }
 
-.dnaCircularLineInner {
-  inset: 12%;
+.dnaCircularFeatureArc {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.dnaCircularSelectionArc {
+  fill: none;
+  stroke: rgba(46, 144, 250, 0.35);
+  stroke-width: 20;
+  stroke-linecap: round;
 }
 
 @media (max-width: 900px) {

@@ -14,6 +14,10 @@ interface CircularDnaScrollerProps {
 const FALLBACK_SEQUENCE = "ACGT".repeat(120);
 const MIN_RENDER_BASES = 240;
 const BASE_TILE_PX = 22;
+const OUTER_RADIUS = 124;
+const INNER_RADIUS = 112;
+const SVG_VIEWBOX_SIZE = 300;
+const SVG_CENTER = SVG_VIEWBOX_SIZE / 2;
 
 const normalizeSequence = (sequence: string): string => {
   const compact = sequence.replace(/\s+/g, "").toUpperCase();
@@ -48,6 +52,7 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
   const trackRef = useRef<HTMLDivElement | null>(null);
   const currentXRef = useRef<number>(0);
   const [currentPosition, setCurrentPosition] = useState(1);
+  const [visibleBases, setVisibleBases] = useState(1);
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
   const circularTrack = useMemo(() => buildCircularTrack(normalized), [normalized]);
@@ -57,13 +62,31 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
   );
   const promoterCount = useMemo(() => annotations.filter((item) => item.type === "promoter").length, [annotations]);
   const cdsCount = useMemo(() => annotations.filter((item) => item.type === "CDS").length, [annotations]);
-  const circleRotationDegrees = useMemo(() => {
-    if (normalized.length === 0) {
-      return 0;
-    }
+  const currentFraction = useMemo(() => ((currentPosition - 1) % normalized.length) / normalized.length, [currentPosition, normalized.length]);
+  const visibleFraction = useMemo(() => Math.min(1, visibleBases / normalized.length), [visibleBases, normalized.length]);
+  const selectionStartFraction = useMemo(() => {
+    const rawStart = currentFraction - visibleFraction / 2;
+    return ((rawStart % 1) + 1) % 1;
+  }, [currentFraction, visibleFraction]);
+  const selectionSweepDegrees = useMemo(() => Math.max(4, visibleFraction * 360), [visibleFraction]);
 
-    return -((currentPosition - 1) / normalized.length) * 360;
-  }, [currentPosition, normalized.length]);
+  const forwardFeatureArcs = useMemo(
+    () =>
+      annotations
+        .filter((feature) => feature.strand === "forward")
+        .map((feature) => {
+          const clampedStart = Math.max(1, Math.min(normalized.length, feature.start));
+          const clampedEnd = Math.max(clampedStart, Math.min(normalized.length, feature.end));
+          const startFraction = (clampedStart - 1) / normalized.length;
+          const endFraction = clampedEnd / normalized.length;
+          return {
+            startFraction,
+            endFraction,
+            color: feature.type === "promoter" ? "#2e90fa" : "#12b76a"
+          };
+        }),
+    [annotations, normalized.length]
+  );
 
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
@@ -133,6 +156,62 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
     };
   }, [normalized]);
 
+  useEffect(() => {
+    if (!viewportRef.current) {
+      return;
+    }
+
+    const updateVisibleBases = (): void => {
+      if (!viewportRef.current) {
+        return;
+      }
+
+      const nextVisibleBases = Math.max(1, Math.round(viewportRef.current.clientWidth / BASE_TILE_PX));
+      setVisibleBases(Math.min(normalized.length, nextVisibleBases));
+    };
+
+    updateVisibleBases();
+
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver(updateVisibleBases);
+    observer.observe(viewportRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [normalized.length]);
+
+  const polarToCartesian = (radius: number, angleDegrees: number): { x: number; y: number } => {
+    const radians = (Math.PI / 180) * angleDegrees;
+    return {
+      x: SVG_CENTER + radius * Math.cos(radians),
+      y: SVG_CENTER + radius * Math.sin(radians)
+    };
+  };
+
+  const buildArcPath = (radius: number, startFraction: number, endFraction: number): string => {
+    const startAngle = -90 + startFraction * 360;
+    const endAngle = -90 + endFraction * 360;
+    const delta = endAngle - startAngle;
+    const largeArcFlag = Math.abs(delta) > 180 ? 1 : 0;
+    const sweepFlag = delta >= 0 ? 1 : 0;
+    const start = polarToCartesian(radius, startAngle);
+    const end = polarToCartesian(radius, endAngle);
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
+  };
+
+  const buildSweepPath = (radius: number, startFraction: number, sweepDegrees: number): string => {
+    const start = -90 + startFraction * 360;
+    const end = start + sweepDegrees;
+    const largeArcFlag = sweepDegrees > 180 ? 1 : 0;
+    const startPoint = polarToCartesian(radius, start);
+    const endPoint = polarToCartesian(radius, end);
+    return `M ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y}`;
+  };
+
   return (
     <section className="dnaScroller" aria-label="dna-scroller">
       <header className="dnaScrollerHeader">
@@ -175,14 +254,24 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
 
       <section className="dnaCircularPanel" aria-label="dna-circular-panel">
         <div className="dnaCircularMarker" aria-hidden="true" />
-        <div
-          className="dnaCircularTrack"
-          aria-label="dna-circular-track"
-          style={{ transform: `rotate(${circleRotationDegrees}deg)` }}
-        >
-          <span className="dnaCircularLine dnaCircularLineOuter" aria-hidden="true" />
-          <span className="dnaCircularLine dnaCircularLineInner" aria-hidden="true" />
-        </div>
+        <svg className="dnaCircularTrack" aria-label="dna-circular-track" viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}>
+          <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={OUTER_RADIUS} />
+          <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={INNER_RADIUS} />
+
+          {forwardFeatureArcs.map((arc, index) => (
+            <path
+              key={`${index}-${arc.startFraction}-${arc.endFraction}`}
+              d={buildArcPath(OUTER_RADIUS, arc.startFraction, arc.endFraction)}
+              className="dnaCircularFeatureArc"
+              style={{ stroke: arc.color }}
+            />
+          ))}
+
+          <path
+            d={buildSweepPath(OUTER_RADIUS, selectionStartFraction, selectionSweepDegrees)}
+            className="dnaCircularSelectionArc"
+          />
+        </svg>
       </section>
     </section>
   );
