@@ -66,10 +66,43 @@ body {
 .viewerPageMain {
   min-height: 100vh;
   width: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   padding: clamp(1rem, 2vw, 2rem);
   background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
+}
+
+
+
+.viewerToolbar {
+  width: min(1200px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+}
+
+.viewerToolbar label {
+  font-weight: 600;
+}
+
+.viewerToolbar select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: #ffffff;
+}
+
+.viewerToolbar p {
+  margin: 0;
+  color: #475467;
+  margin-left: auto;
 }
 
 .dnaScroller {
@@ -81,6 +114,8 @@ body {
   box-shadow: 0 18px 56px rgba(16, 24, 40, 0.08);
   display: grid;
   gap: 1rem;
+  min-height: calc(100vh - 8.5rem);
+  grid-template-rows: auto auto auto auto 1fr;
 }
 
 .dnaScrollerHeader h1 {
@@ -99,7 +134,7 @@ body {
   overflow: hidden;
   border: 1px solid #d0d5dd;
   border-radius: 14px;
-  background: #101828;
+  background: #ffffff;
   padding: 1rem 0;
   cursor: grab;
   user-select: none;
@@ -136,12 +171,44 @@ body {
   font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.95rem;
   font-weight: 700;
+  background: #ffffff;
+  border-top: 4px solid #101828;
+  border-bottom: 4px solid #101828;
 }
 
-.dnaBase-A { color: #fda29b; }
-.dnaBase-C { color: #a4bcfd; }
-.dnaBase-G { color: #6ce9a6; }
-.dnaBase-T { color: #fecdca; }
+.dnaBase-A { color: #b42318; }
+.dnaBase-C { color: #175cd3; }
+.dnaBase-G { color: #067647; }
+.dnaBase-T { color: #93370d; }
+
+.featureLegend {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.featureLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #344054;
+}
+
+.featureSwatch {
+  width: 26px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid #1d2939;
+}
+
+.featureSwatch.promoter {
+  background: #2e90fa;
+}
+
+.featureSwatch.cds {
+  background: #12b76a;
+}
 
 .dnaHint {
   margin: 0;
@@ -149,8 +216,64 @@ body {
   font-size: 0.92rem;
 }
 
+.dnaCircularPanel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  min-height: 240px;
+}
+
+.dnaCircularMarker {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #2e90fa;
+  box-shadow: 0 0 0 4px rgba(46, 144, 250, 0.18);
+  z-index: 2;
+}
+
+.dnaCircularTrack {
+  width: min(60vw, 480px);
+  aspect-ratio: 1 / 1;
+}
+
+.dnaCircularBaseRing {
+  fill: none;
+  stroke: #101828;
+  stroke-width: 8;
+}
+
+.dnaCircularFeatureArc {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.dnaCircularSelectionArc {
+  fill: none;
+  stroke: rgba(46, 144, 250, 0.35);
+  stroke-width: 20;
+  stroke-linecap: round;
+}
+
 @media (max-width: 900px) {
   .homeHero {
     padding: 2rem 1.25rem;
+  }
+
+  .viewerToolbar {
+    flex-wrap: wrap;
+  }
+
+  .viewerToolbar p {
+    margin-left: 0;
+    width: 100%;
   }
 }

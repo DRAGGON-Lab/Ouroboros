@@ -66,3 +66,26 @@ class ViewerWindowResponse(BaseModel):
     reverseFn: str = Field(pattern=r"^[PC-]+$")
     forwardActivity: list[float]
     reverseActivity: list[float]
+
+
+class SequenceAnnotation(BaseModel):
+    id: str
+    type: str = Field(description="Feature type used by the viewer, e.g. promoter or CDS")
+    label: str
+    start: int = Field(ge=1)
+    end: int = Field(ge=1)
+    strand: Strand
+    annotation_source: AnnotationSource = Field(
+        description="Distinguishes curated annotations from inferred annotations"
+    )
+    activity_type: ActivityType = Field(
+        description="Indicates whether activity metadata is measured or predicted"
+    )
+
+
+class ViewerSequenceResponse(BaseModel):
+    source: str
+    sequenceId: str
+    sequence: str = Field(pattern=r"^[ACGTN-]+$")
+    length: int = Field(ge=1)
+    annotations: list[SequenceAnnotation]

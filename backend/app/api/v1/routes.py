@@ -6,15 +6,29 @@ from app.schemas import (
     AnnotationListResponse,
     AnnotationSource,
     GenomeRegionResponse,
+    SequenceAnnotation,
     Strand,
+    ViewerSequenceResponse,
     ViewerWindowResponse,
 )
+from app.services.sequence_loader import load_example_plasmid_sequence, load_example_sequence
 from app.services.viewer_window import WindowMetadata, build_viewer_window_encoding
 
 router = APIRouter()
 
 SUPPORTED_ACCESSION = "U00096.3"
 GENOME_LENGTH = 4_641_652
+PROMOTER_MOTIF = "TTGACAGCTAGCTCAGTCCTAGGTACTGTGCTAGC"
+CDS_MOTIFS = [
+    (
+        "cds_1",
+        "ATGCGTAAAGGAGAAGAACTTTTCACTGGAGTTGTCCCAATTCTTGTTGAATTAGATGGTGATGTTAATGGGCACAAATTTTCTGTCAGTGGAGAGGGTGAAGGTGATGCAACATACGGAAAACTTACCCTTAAATTTATTTGCACTACTGGAAAACTACCTGTTCCATGGCCAACACTTGTCACTACTTTCGGTTATGGTGTTCAATGCTTTGCGAGATACCCAGATCATATGAAACAGCATGACTTTTTCAAGAGTGCCATGCCCGAAGGTTATGTACAGGAAAGAACTATATTTTTCAAAGATGACGGGAACTACAAGACACGTGCTGAAGTCAAGTTTGAAGGTGATACCCTTGTTAATAGAATCGAGTTAAAAGGTATTGATTTTAAAGAAGATGGAAACATTCTTGGACACAAATTGGAATACAACTATAACTCACACAATGTATACATCATGGCAGACAAACAAAAGAATGGAATCAAAGTTAACTTCAAAATTAGACACAACATTGAAGATGGAAGCGTTCAACTAGCAGACCATTATCAACAAAATACTCCAATTGGCGATGGCCCTGTCCTTTTACCAGACAACCATTACCTGTCCACACAATCTGCCCTTTCGAAAGATCCCAACGAAAAGAGAGACTACATGGTCCTTCTTGAGTTTGTAACAGCTGCTGGGATTACACATGGCATGGATGAACTATACAAA",
+    ),
+    (
+        "cds_2",
+        "ATGGCTTCCTCCGAGGATGTTATCAAAGAGTTCATGCGTTTCAAAGTTCGTATGGAAGGTTCCGTTAACGGTCACGAGTTCGAAATCGAAGGTGAAGGTGAAGGTCGTCCGTACGAAGGTACCCAGACCGCTAAACTGAAAGTTACCAAAGGTGGTCCGCTGCCGTTCGCTTGGGACATCCTGTCCCCGCAGTTCCAGTACGGTTCCAAAGCTTACGTTAAACACCCGGCTGACATCCCGGACTACCTGAAACTGTCCTTCCCGGAAGGTTTCAAATGGGAACGTGTTATGAACTTCGAAGATGGTGGTGTTGTTACCGTTACCCAGGACTCCTCCCTGCAAGACGGTGAGTTCATCTACAAAGTTAAACTGCGTGGTACCAACTTCCCGTCCGACGGTCCGGTTATGCAGAAAAAAACCATGGGTTGGGAAGCTTCCACCGAACGTATGTACCCGGAGGATGGTGCTCTGAAAGGTGAAATCAAAATGCGTCTGAAACTGAAAGACGGTGGTCACTACGACGCTGAAGTTAAAACCACCTACATGGCTAAAAAACCGGTTCAGCTGCCGGGTGCTTACAAAACCGACATCAAACTGGACATCACCTCCCACAACGAGGACTACACCATCGTTGAACAGTACGAACGTGCTGAAGGTCGTCACTCCACCGGTGCTTAA",
+    ),
+]
 
 MOCK_ANNOTATIONS: list[AnnotationFeature] = [
     AnnotationFeature(
@@ -48,6 +62,58 @@ MOCK_ANNOTATIONS: list[AnnotationFeature] = [
         activity_type=ActivityType.predicted,
     ),
 ]
+
+
+def _build_processed_annotations(sequence: str) -> list[SequenceAnnotation]:
+    compact_sequence = sequence.upper()
+    annotations: list[SequenceAnnotation] = []
+
+    promoter_starts = _find_overlapping_matches(compact_sequence, PROMOTER_MOTIF)
+    for index, start in enumerate(promoter_starts):
+        annotations.append(
+            SequenceAnnotation(
+                id=f"promoter_{index + 1}",
+                type="promoter",
+                label=f"promoter_match_{index + 1}",
+                start=start,
+                end=start + len(PROMOTER_MOTIF) - 1,
+                strand=Strand.forward,
+                annotation_source=AnnotationSource.inferred,
+                activity_type=ActivityType.predicted,
+            )
+        )
+
+    for cds_id, motif in CDS_MOTIFS:
+        for index, start in enumerate(_find_overlapping_matches(compact_sequence, motif)):
+            annotations.append(
+                SequenceAnnotation(
+                    id=f"{cds_id}_{index + 1}",
+                    type="CDS",
+                    label=f"{cds_id}_match_{index + 1}",
+                    start=start,
+                    end=start + len(motif) - 1,
+                    strand=Strand.forward,
+                    annotation_source=AnnotationSource.inferred,
+                    activity_type=ActivityType.predicted,
+                )
+            )
+
+    return sorted(annotations, key=lambda feature: feature.start)
+
+
+def _find_overlapping_matches(sequence: str, motif: str) -> list[int]:
+    matches: list[int] = []
+    start_index = 0
+
+    while True:
+        found_index = sequence.find(motif, start_index)
+        if found_index == -1:
+            break
+
+        matches.append(found_index + 1)
+        start_index = found_index + 1
+
+    return matches
 
 
 @router.get("/health", tags=["health"])
@@ -221,4 +287,37 @@ def get_viewer_window(
         reverseFn=encoding["reverseFn"],
         forwardActivity=encoding["forwardActivity"],
         reverseActivity=encoding["reverseActivity"],
+    )
+
+
+@router.get(
+    "/viewer/sequence",
+    response_model=ViewerSequenceResponse,
+    tags=["viewer"],
+    responses={
+        400: {"description": "Unsupported sequence source."},
+    },
+)
+def get_viewer_sequence(
+    source: str = Query(
+        "example_sequence",
+        description="Sequence source: example_sequence or example_plasmid",
+    ),
+) -> ViewerSequenceResponse:
+    if source == "example_sequence":
+        sequence_id, sequence = load_example_sequence()
+    elif source == "example_plasmid":
+        sequence_id, sequence = load_example_plasmid_sequence()
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported sequence source. Use 'example_sequence' or 'example_plasmid'.",
+        )
+
+    return ViewerSequenceResponse(
+        source=source,
+        sequenceId=sequence_id,
+        sequence=sequence,
+        length=len(sequence),
+        annotations=_build_processed_annotations(sequence),
     )
