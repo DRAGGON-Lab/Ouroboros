@@ -57,6 +57,7 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
   );
   const promoterCount = useMemo(() => annotations.filter((item) => item.type === "promoter").length, [annotations]);
   const cdsCount = useMemo(() => annotations.filter((item) => item.type === "CDS").length, [annotations]);
+  const rotationDegrees = useMemo(() => -((currentPosition - 1) / normalized.length) * 360, [currentPosition, normalized.length]);
 
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
@@ -161,6 +162,18 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
               </span>
             );
           })}
+        </div>
+      </div>
+
+      <div className="dnaCirclePanel" aria-label="dna-circle-panel">
+        <div className="dnaCircleTopMarker" aria-hidden="true" />
+        <div
+          className="dnaCircleTrack"
+          aria-label="dna-circle-track"
+          style={{ transform: `translate(-50%, -50%) rotate(${rotationDegrees}deg)` }}
+        >
+          <div className="dnaCircleLine dnaCircleLineOuter" aria-hidden="true" />
+          <div className="dnaCircleLine dnaCircleLineInner" aria-hidden="true" />
         </div>
       </div>
 
