@@ -54,6 +54,14 @@ describe("CircularDnaScroller", () => {
 
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
   });
+
+  it("renders a rotating circular DNA track", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
+
+    const circularTrack = screen.getByLabelText("dna-circular-track");
+    expect(circularTrack).toBeInTheDocument();
+    expect(circularTrack).toHaveStyle({ transform: "rotate(0deg)" });
+  });
 });
 
 

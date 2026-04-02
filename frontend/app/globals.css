@@ -69,7 +69,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: clamp(1rem, 2vw, 2rem);
   background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
 }
@@ -114,6 +114,8 @@ body {
   box-shadow: 0 18px 56px rgba(16, 24, 40, 0.08);
   display: grid;
   gap: 1rem;
+  min-height: calc(100vh - 8.5rem);
+  grid-template-rows: auto auto auto auto 1fr;
 }
 
 .dnaScrollerHeader h1 {
@@ -212,6 +214,47 @@ body {
   margin: 0;
   color: #667085;
   font-size: 0.92rem;
+}
+
+.dnaCircularPanel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  min-height: 240px;
+}
+
+.dnaCircularMarker {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #2e90fa;
+  box-shadow: 0 0 0 4px rgba(46, 144, 250, 0.18);
+  z-index: 2;
+}
+
+.dnaCircularTrack {
+  position: relative;
+  width: min(60vw, 480px);
+  aspect-ratio: 1 / 1;
+  transition: transform 0.18s linear;
+}
+
+.dnaCircularLine {
+  position: absolute;
+  border: 6px solid #101828;
+  border-radius: 999px;
+  inset: 0;
+}
+
+.dnaCircularLineInner {
+  inset: 12%;
 }
 
 @media (max-width: 900px) {
