@@ -55,6 +55,16 @@ describe("CircularDnaScroller", () => {
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
   });
 
+  it("routes window vertical wheel events to DNA movement", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
+    screen.getByLabelText("dna-track");
+
+    const callsBeforeWheel = gsapSet.mock.calls.length;
+    fireEvent.wheel(window, { deltaY: 80 });
+
+    expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
+  });
+
   it("renders a circular DNA track with a visible-range overlay", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
 
