@@ -137,8 +137,8 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
 
     const handleWindowWheel = (event: WheelEvent): void => {
       event.preventDefault();
-      const horizontalContribution = Math.abs(event.deltaX) > 0 ? -event.deltaX : 0;
-      const verticalContribution = event.deltaY;
+      const horizontalContribution = Math.abs(event.deltaX) > 0 ? event.deltaX : 0;
+      const verticalContribution = -event.deltaY;
       const delta = horizontalContribution + verticalContribution;
       applyWrappedX(currentXRef.current - delta);
       draggable.update();
