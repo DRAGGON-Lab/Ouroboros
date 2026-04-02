@@ -134,13 +134,8 @@ body {
   border-radius: 14px;
   background: #ffffff;
   padding: 1rem 0;
-  cursor: grab;
   user-select: none;
   touch-action: pan-y;
-}
-
-.dnaViewport:active {
-  cursor: grabbing;
 }
 
 .dnaCenterMarker {
@@ -165,19 +160,71 @@ body {
 
 .dnaBase {
   width: 22px;
+  height: 24px;
   text-align: center;
-  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: 0.95rem;
-  font-weight: 700;
   background: #ffffff;
   border-top: 4px solid #101828;
   border-bottom: 4px solid #101828;
 }
 
-.dnaBase-A { color: #b42318; }
-.dnaBase-C { color: #175cd3; }
-.dnaBase-G { color: #067647; }
-.dnaBase-T { color: #93370d; }
+.dnaBaseSelected {
+  background: #d1e9ff;
+  border-bottom-color: #2e90fa;
+}
+
+.selectionControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.selectionControls label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.selectionControls input {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  min-width: min(360px, 100%);
+}
+
+.linearZoomPanel {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.4rem;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.linearZoomBase {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.35rem 0.3rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.linearZoomBase span {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.linearZoomBase small {
+  font-size: 0.65rem;
+  color: #475467;
+}
+
+.linearZoomBaseSelected {
+  border-color: #2e90fa;
+  box-shadow: 0 0 0 1px #2e90fa inset;
+  background: #eff8ff;
+}
 
 .featureLegend {
   display: flex;

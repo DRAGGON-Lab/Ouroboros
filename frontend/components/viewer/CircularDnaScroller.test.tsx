@@ -1,30 +1,8 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import CircularDnaScroller, { buildCircularTrack } from "./CircularDnaScroller";
-
-const { gsapSet } = vi.hoisted(() => ({
-  gsapSet: vi.fn()
-}));
-
-vi.mock("gsap/dist/gsap", () => ({
-  default: {
-    registerPlugin: vi.fn(),
-    set: gsapSet
-  }
-}));
-
-vi.mock("gsap/dist/Draggable", () => ({
-  Draggable: {
-    create: vi.fn(() => [
-      {
-        update: vi.fn(),
-        kill: vi.fn()
-      }
-    ])
-  }
-}));
+import CircularDnaScroller, { buildCircularTrack, parseSelectionInput } from "./CircularDnaScroller";
 
 describe("buildCircularTrack", () => {
   it("builds a repeated track with three circular copies", () => {
@@ -44,34 +22,57 @@ describe("buildCircularTrack", () => {
   });
 });
 
-describe("CircularDnaScroller", () => {
-  it("routes window horizontal wheel events to DNA movement", () => {
-    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
-    screen.getByLabelText("dna-track");
+describe("parseSelectionInput", () => {
+  it("parses a single position", () => {
+    expect(parseSelectionInput("1,622 / 4,033", 4033)).toEqual({ start: 1622, end: 1622 });
+  });
 
-    const callsBeforeWheel = gsapSet.mock.calls.length;
-    fireEvent.wheel(window, { deltaX: 80 });
-
-    expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
+  it("parses and normalizes a range", () => {
+    expect(parseSelectionInput("1,640-1,622/4,033", 4033)).toEqual({ start: 1622, end: 1640 });
   });
 });
 
+describe("CircularDnaScroller", () => {
+  it("routes vertical wheel events to DNA movement", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
 
-describe("feature highlighting", () => {
+    const viewport = screen.getByLabelText("dna-viewport");
+    const positionLabelBefore = document.querySelector(".dnaScrollerHeader strong")?.textContent;
+
+    fireEvent.wheel(viewport, { deltaY: 80 });
+
+    expect(document.querySelector(".dnaScrollerHeader strong")?.textContent).not.toEqual(positionLabelBefore);
+  });
+
+  it("supports selecting a linear range by dragging", () => {
+    render(<CircularDnaScroller sequence={"ACGT".repeat(60)} annotations={[]} />);
+
+    const base10 = screen.getByLabelText("base-10");
+    const base14 = screen.getByLabelText("base-14");
+
+    fireEvent.mouseDown(base10);
+    fireEvent.mouseEnter(base14, { buttons: 1 });
+    fireEvent.mouseUp(base14);
+
+    expect(screen.getByText("10-14 / 240")).toBeInTheDocument();
+  });
+
   it("colors promoter regions on the top border", () => {
     render(
       <CircularDnaScroller
         sequence="ACGTACGT"
-        annotations={[{
-          id: "promoter_1",
-          type: "promoter",
-          label: "promoter_match_1",
-          start: 2,
-          end: 3,
-          strand: "forward",
-          annotation_source: "inferred",
-          activity_type: "predicted"
-        }]}
+        annotations={[
+          {
+            id: "promoter_1",
+            type: "promoter",
+            label: "promoter_match_1",
+            start: 2,
+            end: 3,
+            strand: "forward",
+            annotation_source: "inferred",
+            activity_type: "predicted"
+          }
+        ]}
       />
     );
 
