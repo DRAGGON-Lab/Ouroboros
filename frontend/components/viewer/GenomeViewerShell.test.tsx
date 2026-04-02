@@ -12,7 +12,7 @@ vi.mock("../../features/viewer/api", () => ({
   loadViewerSequence: loadViewerSequenceMock
 }));
 
-vi.mock("gsap/dist/gsap", () => ({
+vi.mock("gsap", () => ({
   default: {
     registerPlugin: vi.fn(),
     set: vi.fn()

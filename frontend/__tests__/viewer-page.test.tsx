@@ -4,7 +4,7 @@ import { vi } from "vitest";
 
 import ViewerPage from "../app/viewer/page";
 
-vi.mock("gsap/dist/gsap", () => ({
+vi.mock("gsap", () => ({
   default: {
     registerPlugin: vi.fn(),
     set: vi.fn()

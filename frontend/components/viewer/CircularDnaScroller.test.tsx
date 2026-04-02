@@ -1,30 +1,8 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import CircularDnaScroller, { buildCircularTrack } from "./CircularDnaScroller";
-
-const { gsapSet } = vi.hoisted(() => ({
-  gsapSet: vi.fn()
-}));
-
-vi.mock("gsap/dist/gsap", () => ({
-  default: {
-    registerPlugin: vi.fn(),
-    set: gsapSet
-  }
-}));
-
-vi.mock("gsap/dist/Draggable", () => ({
-  Draggable: {
-    create: vi.fn(() => [
-      {
-        update: vi.fn(),
-        kill: vi.fn()
-      }
-    ])
-  }
-}));
 
 describe("buildCircularTrack", () => {
   it("builds a repeated track with three circular copies", () => {
@@ -45,33 +23,47 @@ describe("buildCircularTrack", () => {
 });
 
 describe("CircularDnaScroller", () => {
-  it("routes window horizontal wheel events to DNA movement", () => {
+  it("routes window vertical wheel events to DNA movement", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
-    screen.getByLabelText("dna-track");
+    const track = screen.getByLabelText("dna-track");
 
-    const callsBeforeWheel = gsapSet.mock.calls.length;
-    fireEvent.wheel(window, { deltaX: 80 });
+    const transformBefore = (track as HTMLDivElement).style.transform;
+    fireEvent.wheel(window, { deltaY: 80 });
 
-    expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
+    expect((track as HTMLDivElement).style.transform).not.toEqual(transformBefore);
+  });
+
+  it("allows selecting a range using shift+click", () => {
+    render(<CircularDnaScroller sequence={"ACGT".repeat(1200)} annotations={[]} />);
+
+    const base1 = screen.getByRole("button", { name: "position-1" });
+    fireEvent.click(base1);
+    expect(screen.getByLabelText("position-indicator").textContent).toContain("position 1 / 4,800");
+
+    const base20 = screen.getByRole("button", { name: "position-20" });
+    fireEvent.click(base20, { shiftKey: true });
+
+    expect(screen.getByLabelText("position-indicator").textContent).toContain("position 1-20 / 4,800");
   });
 });
-
 
 describe("feature highlighting", () => {
   it("colors promoter regions on the top border", () => {
     render(
       <CircularDnaScroller
         sequence="ACGTACGT"
-        annotations={[{
-          id: "promoter_1",
-          type: "promoter",
-          label: "promoter_match_1",
-          start: 2,
-          end: 3,
-          strand: "forward",
-          annotation_source: "inferred",
-          activity_type: "predicted"
-        }]}
+        annotations={[
+          {
+            id: "promoter_1",
+            type: "promoter",
+            label: "promoter_match_1",
+            start: 2,
+            end: 3,
+            strand: "forward",
+            annotation_source: "inferred",
+            activity_type: "predicted"
+          }
+        ]}
       />
     );
 
