@@ -211,23 +211,22 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
 
   return (
     <section className="dnaScroller" aria-label="dna-scroller">
-      <header className="dnaScrollerHeader">
+      <header className="dnaScrollerHeader dnaCompactHeader">
         <h1>DNA Viewer</h1>
         <p>
           Circular sequence · position <strong>{currentPosition.toLocaleString()}</strong> / {normalized.length.toLocaleString()}
         </p>
+        <div className="featureLegend" aria-label="feature-legend">
+          <div className="featureLegendItem">
+            <span className="featureSwatch promoter" aria-hidden="true" />
+            <span>Promoter ({promoterCount})</span>
+          </div>
+          <div className="featureLegendItem">
+            <span className="featureSwatch cds" aria-hidden="true" />
+            <span>CDS ({cdsCount})</span>
+          </div>
+        </div>
       </header>
-
-      <div className="featureLegend" aria-label="feature-legend">
-        <div className="featureLegendItem">
-          <span className="featureSwatch promoter" aria-hidden="true" />
-          <span>Promoter ({promoterCount})</span>
-        </div>
-        <div className="featureLegendItem">
-          <span className="featureSwatch cds" aria-hidden="true" />
-          <span>CDS ({cdsCount})</span>
-        </div>
-      </div>
 
       <div className="dnaViewport" ref={viewportRef} aria-label="dna-viewport">
         <div className="dnaCenterMarker" aria-hidden="true" />
@@ -246,8 +245,6 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
           })}
         </div>
       </div>
-
-      <p className="dnaHint">Drag DNA, or use horizontal wheel/shift+wheel anywhere in the viewer window.</p>
 
       <section className="dnaCircularPanel" aria-label="dna-circular-panel">
         <svg className="dnaCircularTrack" aria-label="dna-circular-track" viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}>
