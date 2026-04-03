@@ -77,6 +77,33 @@ describe("CircularDnaScroller", () => {
     expect(xAfter).toBeGreaterThan(xBefore);
   });
 
+
+
+  it("updates linear position when dragging on the circular selection window", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
+
+    const circularTrack = screen.getByLabelText("dna-circular-track");
+    vi.spyOn(circularTrack, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 200,
+      width: 200,
+      height: 200,
+      toJSON: () => ({})
+    } as DOMRect);
+
+    expect(screen.getByText(/position/i)).toHaveTextContent("position 1 / 8");
+
+    fireEvent.mouseDown(circularTrack, { clientX: 200, clientY: 100 });
+    fireEvent.mouseMove(circularTrack, { clientX: 200, clientY: 100 });
+    fireEvent.mouseUp(circularTrack);
+
+    expect(screen.getByText(/position/i)).toHaveTextContent("position 3 / 8");
+  });
+
   it("renders a circular DNA track with a visible-range overlay", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
 

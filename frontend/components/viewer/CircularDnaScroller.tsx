@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap/dist/gsap";
 import { Draggable } from "gsap/dist/Draggable";
 
@@ -23,17 +23,12 @@ const SVG_CENTER = SVG_VIEWBOX_SIZE / 2;
 
 const normalizeSequence = (sequence: string): string => {
   const compact = sequence.replace(/\s+/g, "").toUpperCase();
-  if (compact.length > 0) {
-    return compact;
-  }
-
-  return FALLBACK_SEQUENCE;
+  return compact.length > 0 ? compact : FALLBACK_SEQUENCE;
 };
 
 const getTopBorderColor = (index: number, annotations: SequenceAnnotation[]): string => {
   const oneBasedIndex = index + 1;
   const activeFeature = annotations.find((feature) => oneBasedIndex >= feature.start && oneBasedIndex <= feature.end);
-
   if (!activeFeature) {
     return "#101828";
   }
@@ -44,17 +39,18 @@ const getTopBorderColor = (index: number, annotations: SequenceAnnotation[]): st
 export const buildCircularTrack = (sequence: string): string => {
   const normalized = normalizeSequence(sequence);
   const minimumRepeats = Math.max(1, Math.ceil(MIN_RENDER_BASES / normalized.length));
-  const expanded = normalized.repeat(minimumRepeats);
-
-  return expanded.repeat(3);
+  return normalized.repeat(minimumRepeats).repeat(3);
 };
 
 export default function CircularDnaScroller({ sequence, annotations, sourceSelector }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const circularTrackRef = useRef<SVGSVGElement | null>(null);
+  const draggableRef = useRef<{ update: () => void; kill: () => void } | null>(null);
   const currentXRef = useRef<number>(0);
   const [currentPosition, setCurrentPosition] = useState(1);
   const [visibleBases, setVisibleBases] = useState(1);
+  const [isCircularDragging, setIsCircularDragging] = useState(false);
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
   const circularTrack = useMemo(() => buildCircularTrack(normalized), [normalized]);
@@ -66,10 +62,7 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
   const cdsCount = useMemo(() => annotations.filter((item) => item.type === "CDS").length, [annotations]);
   const currentFraction = useMemo(() => ((currentPosition - 1) % normalized.length) / normalized.length, [currentPosition, normalized.length]);
   const visibleFraction = useMemo(() => Math.min(1, visibleBases / normalized.length), [visibleBases, normalized.length]);
-  const selectionStartFraction = useMemo(() => {
-    const rawStart = currentFraction - visibleFraction / 2;
-    return ((rawStart % 1) + 1) % 1;
-  }, [currentFraction, visibleFraction]);
+  const selectionStartFraction = useMemo(() => ((currentFraction - visibleFraction / 2) % 1 + 1) % 1, [currentFraction, visibleFraction]);
   const selectionSweepDegrees = useMemo(() => Math.max(4, visibleFraction * 360), [visibleFraction]);
 
   const forwardFeatureArcs = useMemo(
@@ -79,16 +72,69 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
         .map((feature) => {
           const clampedStart = Math.max(1, Math.min(normalized.length, feature.start));
           const clampedEnd = Math.max(clampedStart, Math.min(normalized.length, feature.end));
-          const startFraction = (clampedStart - 1) / normalized.length;
-          const endFraction = clampedEnd / normalized.length;
           return {
-            startFraction,
-            endFraction,
+            startFraction: (clampedStart - 1) / normalized.length,
+            endFraction: clampedEnd / normalized.length,
             color: feature.type === "promoter" ? "#2e90fa" : "#12b76a"
           };
         }),
     [annotations, normalized.length]
   );
+
+  const clampToCircle = useCallback((rawX: number): number => {
+    const sequenceWidth = normalized.length * BASE_TILE_PX;
+    const midpoint = -sequenceWidth;
+    const offset = rawX - midpoint;
+    const wrapped = ((offset % sequenceWidth) + sequenceWidth) % sequenceWidth;
+    return midpoint + wrapped;
+  }, [normalized.length]);
+
+  const applyWrappedX = useCallback((rawX: number): void => {
+    if (!trackRef.current) {
+      return;
+    }
+
+    const sequenceWidth = normalized.length * BASE_TILE_PX;
+    const midpoint = -sequenceWidth;
+    const wrappedX = clampToCircle(rawX);
+    const localX = wrappedX - midpoint;
+    const pixelsFromStart = ((-localX % sequenceWidth) + sequenceWidth) % sequenceWidth;
+
+    currentXRef.current = wrappedX;
+    gsap.set(trackRef.current, { x: wrappedX });
+    setCurrentPosition(Math.floor(pixelsFromStart / BASE_TILE_PX) + 1);
+  }, [clampToCircle, normalized.length]);
+
+  const applyCurrentPosition = useCallback((nextPosition: number): void => {
+    if (!Number.isFinite(nextPosition)) {
+      return;
+    }
+
+    const normalizedPosition = ((Math.round(nextPosition) - 1) % normalized.length + normalized.length) % normalized.length;
+    const sequenceWidth = normalized.length * BASE_TILE_PX;
+    const midpoint = -sequenceWidth;
+    applyWrappedX(midpoint - normalizedPosition * BASE_TILE_PX);
+    draggableRef.current?.update();
+  }, [applyWrappedX, normalized.length]);
+
+  const updatePositionFromCircularPointer = useCallback((clientX: number, clientY: number): void => {
+    if (!circularTrackRef.current) {
+      return;
+    }
+
+    const rect = circularTrackRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    if (![clientX, clientY, centerX, centerY].every((value) => Number.isFinite(value))) {
+      return;
+    }
+
+    const angleDegrees = (Math.atan2(clientY - centerY, clientX - centerX) * 180) / Math.PI;
+    const fraction = ((angleDegrees + 90 + 360) % 360) / 360;
+    const nextPosition = Math.max(1, Math.min(normalized.length, Math.round(fraction * normalized.length) + 1));
+    applyCurrentPosition(nextPosition);
+  }, [applyCurrentPosition, normalized.length]);
 
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
@@ -96,38 +142,14 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
     }
 
     gsap.registerPlugin(Draggable);
-
     const sequenceWidth = normalized.length * BASE_TILE_PX;
     const midpoint = -sequenceWidth;
-
-    const clampToCircle = (rawX: number): number => {
-      const offset = rawX - midpoint;
-      const wrapped = ((offset % sequenceWidth) + sequenceWidth) % sequenceWidth;
-      return midpoint + wrapped;
-    };
-
-    const updatePositionLabel = (wrappedX: number): void => {
-      const localX = wrappedX - midpoint;
-      const pixelsFromStart = ((-localX % sequenceWidth) + sequenceWidth) % sequenceWidth;
-      const baseIndex = Math.floor(pixelsFromStart / BASE_TILE_PX);
-      setCurrentPosition(baseIndex + 1);
-    };
-
-    const applyWrappedX = (rawX: number): void => {
-      const wrappedX = clampToCircle(rawX);
-      currentXRef.current = wrappedX;
-      gsap.set(trackRef.current, { x: wrappedX });
-      updatePositionLabel(wrappedX);
-    };
 
     applyWrappedX(midpoint);
 
     const draggable = Draggable.create(trackRef.current, {
       type: "x",
-      bounds: {
-        minX: midpoint - sequenceWidth,
-        maxX: midpoint + sequenceWidth
-      },
+      bounds: { minX: midpoint - sequenceWidth, maxX: midpoint + sequenceWidth },
       inertia: false,
       onDrag() {
         applyWrappedX(this.x);
@@ -137,22 +159,23 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       }
     })[0];
 
+    draggableRef.current = draggable;
+
     const handleWindowWheel = (event: WheelEvent): void => {
       event.preventDefault();
       const horizontalContribution = Math.abs(event.deltaX) > 0 ? event.deltaX : 0;
       const verticalContribution = -event.deltaY;
-      const delta = horizontalContribution + verticalContribution;
-      applyWrappedX(currentXRef.current - delta);
+      applyWrappedX(currentXRef.current - (horizontalContribution + verticalContribution));
       draggable.update();
     };
 
     window.addEventListener("wheel", handleWindowWheel, { passive: false });
-
     return () => {
       window.removeEventListener("wheel", handleWindowWheel);
+      draggableRef.current = null;
       draggable.kill();
     };
-  }, [normalized]);
+  }, [applyWrappedX, normalized.length]);
 
   useEffect(() => {
     if (!viewportRef.current) {
@@ -176,38 +199,46 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
 
     const observer = new ResizeObserver(updateVisibleBases);
     observer.observe(viewportRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [normalized.length]);
 
   const polarToCartesian = (radius: number, angleDegrees: number): { x: number; y: number } => {
     const radians = (Math.PI / 180) * angleDegrees;
-    return {
-      x: SVG_CENTER + radius * Math.cos(radians),
-      y: SVG_CENTER + radius * Math.sin(radians)
-    };
+    return { x: SVG_CENTER + radius * Math.cos(radians), y: SVG_CENTER + radius * Math.sin(radians) };
   };
 
   const buildArcPath = (radius: number, startFraction: number, endFraction: number): string => {
     const startAngle = -90 + startFraction * 360;
     const endAngle = -90 + endFraction * 360;
     const delta = endAngle - startAngle;
-    const largeArcFlag = Math.abs(delta) > 180 ? 1 : 0;
-    const sweepFlag = delta >= 0 ? 1 : 0;
     const start = polarToCartesian(radius, startAngle);
     const end = polarToCartesian(radius, endAngle);
-    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${Math.abs(delta) > 180 ? 1 : 0} ${delta >= 0 ? 1 : 0} ${end.x} ${end.y}`;
   };
 
   const buildSweepPath = (radius: number, startFraction: number, sweepDegrees: number): string => {
     const start = -90 + startFraction * 360;
     const end = start + sweepDegrees;
-    const largeArcFlag = sweepDegrees > 180 ? 1 : 0;
     const startPoint = polarToCartesian(radius, start);
     const endPoint = polarToCartesian(radius, end);
-    return `M ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y}`;
+    return `M ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${sweepDegrees > 180 ? 1 : 0} 1 ${endPoint.x} ${endPoint.y}`;
+  };
+
+  const beginCircularDrag = (clientX: number, clientY: number): void => {
+    setIsCircularDragging(true);
+    updatePositionFromCircularPointer(clientX, clientY);
+  };
+
+  const continueCircularDrag = (clientX: number, clientY: number): void => {
+    if (!isCircularDragging) {
+      return;
+    }
+
+    updatePositionFromCircularPointer(clientX, clientY);
+  };
+
+  const endCircularDrag = (): void => {
+    setIsCircularDragging(false);
   };
 
   return (
@@ -249,10 +280,22 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       </div>
 
       <section className="dnaCircularPanel" aria-label="dna-circular-panel">
-        <svg className="dnaCircularTrack" aria-label="dna-circular-track" viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}>
+        <svg
+          className="dnaCircularTrack"
+          ref={circularTrackRef}
+          aria-label="dna-circular-track"
+          viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}
+          onPointerDown={(event) => beginCircularDrag(event.clientX, event.clientY)}
+          onPointerMove={(event) => continueCircularDrag(event.clientX, event.clientY)}
+          onPointerUp={endCircularDrag}
+          onPointerLeave={endCircularDrag}
+          onMouseDown={(event) => beginCircularDrag(event.clientX, event.clientY)}
+          onMouseMove={(event) => continueCircularDrag(event.clientX, event.clientY)}
+          onMouseUp={endCircularDrag}
+          onMouseLeave={endCircularDrag}
+        >
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={OUTER_RADIUS} />
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={INNER_RADIUS} />
-
           {forwardFeatureArcs.map((arc, index) => (
             <path
               key={`${index}-${arc.startFraction}-${arc.endFraction}`}
@@ -261,11 +304,7 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
               style={{ stroke: arc.color }}
             />
           ))}
-
-          <path
-            d={buildSweepPath(SELECTION_RADIUS, selectionStartFraction, selectionSweepDegrees)}
-            className="dnaCircularSelectionArc"
-          />
+          <path d={buildSweepPath(SELECTION_RADIUS, selectionStartFraction, selectionSweepDegrees)} className="dnaCircularSelectionArc" />
         </svg>
       </section>
     </section>
