@@ -52,28 +52,30 @@ export default function GenomeViewerShell() {
     }
   };
 
-  const statusMessage = isLoading
-    ? "Loading sequence..."
-    : loadError || `${sourceLabel} loaded · ${sequence.length.toLocaleString()} bp · ${annotations.length} inferred functional features`;
-
   return (
     <main className="viewerPageMain">
-      <section className="viewerToolbar" aria-label="viewer-toolbar">
-        <label htmlFor="sequence-source-select">Sequence</label>
-        <select
-          id="sequence-source-select"
-          value={selectedSource}
-          onChange={(event) => {
-            void onSourceChange(event.target.value as ViewerSequenceSource);
-          }}
-        >
-          <option value={EXAMPLE_SEQUENCE_SOURCE}>Example sequence (1011 bp)</option>
-          <option value={EXAMPLE_PLASMID_SOURCE}>Example plasmid</option>
-        </select>
-        <p aria-live="polite">{statusMessage}</p>
-      </section>
-
-      <CircularDnaScroller sequence={sequence} annotations={annotations} />
+      <CircularDnaScroller
+        sequence={sequence}
+        annotations={annotations}
+        sourceSelector={(
+          <>
+            <label htmlFor="sequence-source-select">Sequence</label>
+            <select
+              id="sequence-source-select"
+              value={selectedSource}
+              onChange={(event) => {
+                void onSourceChange(event.target.value as ViewerSequenceSource);
+              }}
+            >
+              <option value={EXAMPLE_SEQUENCE_SOURCE}>Example sequence (1011 bp)</option>
+              <option value={EXAMPLE_PLASMID_SOURCE}>Example plasmid</option>
+            </select>
+            <span className="dnaSourceStatus" aria-live="polite">
+              {isLoading ? "Loading sequence..." : loadError || sourceLabel}
+            </span>
+          </>
+        )}
+      />
     </main>
   );
 }
