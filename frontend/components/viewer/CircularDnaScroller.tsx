@@ -20,6 +20,12 @@ const INNER_RADIUS = 112;
 const SELECTION_RADIUS = (OUTER_RADIUS + INNER_RADIUS) / 2;
 const SVG_VIEWBOX_SIZE = 300;
 const SVG_CENTER = SVG_VIEWBOX_SIZE / 2;
+interface BoundsLike {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
 
 const normalizeSequence = (sequence: string): string => {
   const compact = sequence.replace(/\s+/g, "").toUpperCase();
@@ -49,10 +55,33 @@ export const buildCircularTrack = (sequence: string): string => {
   return expanded.repeat(3);
 };
 
+export const getWrappedXFromCircularPoint = (
+  clientX: number,
+  clientY: number,
+  bounds: BoundsLike,
+  sequenceWidth: number,
+  midpoint: number
+): number | null => {
+  if (!Number.isFinite(clientX) || !Number.isFinite(clientY) || bounds.width <= 0 || bounds.height <= 0) {
+    return null;
+  }
+
+  const x = ((clientX - bounds.left) / bounds.width) * SVG_VIEWBOX_SIZE;
+  const y = ((clientY - bounds.top) / bounds.height) * SVG_VIEWBOX_SIZE;
+  const angleDegrees = (Math.atan2(y - SVG_CENTER, x - SVG_CENTER) * 180) / Math.PI;
+  const clockwiseFromTop = ((angleDegrees + 90) % 360 + 360) % 360;
+  const centerFraction = clockwiseFromTop / 360;
+  const localX = -centerFraction * sequenceWidth;
+  return midpoint + localX;
+};
+
 export default function CircularDnaScroller({ sequence, annotations, sourceSelector }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const circularHandleRef = useRef<SVGPathElement | null>(null);
   const currentXRef = useRef<number>(0);
+  const applyWrappedXRef = useRef<(rawX: number) => void>(() => {});
+  const activePointerIdRef = useRef<number | null>(null);
   const [currentPosition, setCurrentPosition] = useState(1);
   const [visibleBases, setVisibleBases] = useState(1);
 
@@ -71,6 +100,8 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
     return ((rawStart % 1) + 1) % 1;
   }, [currentFraction, visibleFraction]);
   const selectionSweepDegrees = useMemo(() => Math.max(4, visibleFraction * 360), [visibleFraction]);
+  const sequenceWidth = useMemo(() => normalized.length * BASE_TILE_PX, [normalized.length]);
+  const midpoint = useMemo(() => -sequenceWidth, [sequenceWidth]);
 
   const forwardFeatureArcs = useMemo(
     () =>
@@ -97,9 +128,6 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
 
     gsap.registerPlugin(Draggable);
 
-    const sequenceWidth = normalized.length * BASE_TILE_PX;
-    const midpoint = -sequenceWidth;
-
     const clampToCircle = (rawX: number): number => {
       const offset = rawX - midpoint;
       const wrapped = ((offset % sequenceWidth) + sequenceWidth) % sequenceWidth;
@@ -119,6 +147,7 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       gsap.set(trackRef.current, { x: wrappedX });
       updatePositionLabel(wrappedX);
     };
+    applyWrappedXRef.current = applyWrappedX;
 
     applyWrappedX(midpoint);
 
@@ -152,7 +181,54 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       window.removeEventListener("wheel", handleWindowWheel);
       draggable.kill();
     };
-  }, [normalized]);
+  }, [midpoint, sequenceWidth]);
+
+  const updatePositionFromCircularPoint = (clientX: number, clientY: number): void => {
+    if (!circularHandleRef.current) {
+      return;
+    }
+    const bounds = circularHandleRef.current.ownerSVGElement?.getBoundingClientRect();
+    if (!bounds) {
+      return;
+    }
+    const wrappedX = getWrappedXFromCircularPoint(clientX, clientY, bounds, sequenceWidth, midpoint);
+    if (wrappedX === null) {
+      return;
+    }
+
+    applyWrappedXRef.current(wrappedX);
+  };
+
+  const handleCircularPointerDown = (event: React.PointerEvent<SVGPathElement>): void => {
+    activePointerIdRef.current = event.pointerId;
+    if (typeof event.currentTarget.setPointerCapture === "function") {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    updatePositionFromCircularPoint(event.clientX, event.clientY);
+  };
+
+  const handleCircularPointerMove = (event: React.PointerEvent<SVGPathElement>): void => {
+    if (activePointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    updatePositionFromCircularPoint(event.clientX, event.clientY);
+  };
+
+  const handleCircularPointerEnd = (event: React.PointerEvent<SVGPathElement>): void => {
+    if (activePointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    if (
+      typeof event.currentTarget.hasPointerCapture === "function"
+      && event.currentTarget.hasPointerCapture(event.pointerId)
+      && typeof event.currentTarget.releasePointerCapture === "function"
+    ) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    activePointerIdRef.current = null;
+  };
 
   useEffect(() => {
     if (!viewportRef.current) {
@@ -265,6 +341,16 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
           <path
             d={buildSweepPath(SELECTION_RADIUS, selectionStartFraction, selectionSweepDegrees)}
             className="dnaCircularSelectionArc"
+          />
+          <path
+            ref={circularHandleRef}
+            d={buildSweepPath(SELECTION_RADIUS, selectionStartFraction, selectionSweepDegrees)}
+            className="dnaCircularSelectionHandle"
+            aria-label="dna-circular-window-handle"
+            onPointerDown={handleCircularPointerDown}
+            onPointerMove={handleCircularPointerMove}
+            onPointerUp={handleCircularPointerEnd}
+            onPointerCancel={handleCircularPointerEnd}
           />
         </svg>
       </section>
