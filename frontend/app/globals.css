@@ -69,7 +69,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: clamp(1rem, 2vw, 2rem);
   background: radial-gradient(circle at top left, #eef4ff 0%, #f8fafc 45%, #f8fafc 100%);
 }
@@ -113,7 +113,9 @@ body {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   box-shadow: 0 18px 56px rgba(16, 24, 40, 0.08);
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
+  min-height: calc(100vh - 8.5rem);
+  grid-template-rows: auto auto 1fr;
 }
 
 .dnaScrollerHeader h1 {
@@ -122,8 +124,19 @@ body {
 }
 
 .dnaScrollerHeader p {
-  margin: 0.35rem 0 0;
+  margin: 0;
   color: #475467;
+}
+
+.dnaCompactHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.dnaCompactHeader .featureLegend {
+  margin-left: auto;
 }
 
 .dnaViewport {
@@ -208,10 +221,39 @@ body {
   background: #12b76a;
 }
 
-.dnaHint {
-  margin: 0;
-  color: #667085;
-  font-size: 0.92rem;
+.dnaCircularPanel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  min-height: 0;
+  padding-block: 0.25rem;
+}
+
+.dnaCircularTrack {
+  width: min(86vw, 760px);
+  aspect-ratio: 1 / 1;
+}
+
+.dnaCircularBaseRing {
+  fill: none;
+  stroke: #101828;
+  stroke-width: 8;
+}
+
+.dnaCircularFeatureArc {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.dnaCircularSelectionArc {
+  fill: none;
+  stroke: rgba(46, 144, 250, 0.35);
+  stroke-width: 24;
+  stroke-linecap: round;
 }
 
 @media (max-width: 900px) {
