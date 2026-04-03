@@ -55,6 +55,28 @@ describe("CircularDnaScroller", () => {
     expect(gsapSet.mock.calls.length).toBeGreaterThan(callsBeforeWheel);
   });
 
+  it("inverts vertical wheel direction so scroll down moves opposite of previous behavior", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
+    screen.getByLabelText("dna-track");
+
+    const xBefore = (gsapSet.mock.calls.at(-1)?.[1] as { x: number }).x;
+    fireEvent.wheel(window, { deltaY: 80 });
+    const xAfter = (gsapSet.mock.calls.at(-1)?.[1] as { x: number }).x;
+
+    expect(xAfter).toBeGreaterThan(xBefore);
+  });
+
+  it("inverts horizontal wheel direction so scroll left moves opposite of previous behavior", () => {
+    render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
+    screen.getByLabelText("dna-track");
+
+    const xBefore = (gsapSet.mock.calls.at(-1)?.[1] as { x: number }).x;
+    fireEvent.wheel(window, { deltaX: -80 });
+    const xAfter = (gsapSet.mock.calls.at(-1)?.[1] as { x: number }).x;
+
+    expect(xAfter).toBeGreaterThan(xBefore);
+  });
+
   it("renders a circular DNA track with a visible-range overlay", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
 
