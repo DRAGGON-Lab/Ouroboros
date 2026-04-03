@@ -139,6 +139,29 @@ body {
   margin-left: auto;
 }
 
+.dnaSourceSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dnaSourceSelector label {
+  font-weight: 600;
+  color: #344054;
+}
+
+.dnaSourceSelector select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  background: #ffffff;
+}
+
+.dnaSourceStatus {
+  color: #667085;
+  font-size: 0.85rem;
+}
+
 .dnaViewport {
   position: relative;
   width: 100%;

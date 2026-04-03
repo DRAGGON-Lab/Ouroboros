@@ -9,6 +9,7 @@ import type { SequenceAnnotation } from "../../shared/types/ts";
 interface CircularDnaScrollerProps {
   sequence: string;
   annotations: SequenceAnnotation[];
+  sourceSelector?: React.ReactNode;
 }
 
 const FALLBACK_SEQUENCE = "ACGT".repeat(120);
@@ -48,7 +49,7 @@ export const buildCircularTrack = (sequence: string): string => {
   return expanded.repeat(3);
 };
 
-export default function CircularDnaScroller({ sequence, annotations }: CircularDnaScrollerProps) {
+export default function CircularDnaScroller({ sequence, annotations, sourceSelector }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const currentXRef = useRef<number>(0);
@@ -213,6 +214,7 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
     <section className="dnaScroller" aria-label="dna-scroller">
       <header className="dnaScrollerHeader dnaCompactHeader">
         <h1>DNA Viewer</h1>
+        {sourceSelector ? <div className="dnaSourceSelector">{sourceSelector}</div> : null}
         <p>
           Circular sequence · position <strong>{currentPosition.toLocaleString()}</strong> / {normalized.length.toLocaleString()}
         </p>

@@ -25,7 +25,6 @@ describe("ViewerPage", () => {
     expect(screen.getByLabelText(/dna-viewport/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/dna-track/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/dna-circular-track/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/viewer-toolbar/i)).toBeInTheDocument();
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 });
