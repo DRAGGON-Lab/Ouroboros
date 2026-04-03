@@ -1,8 +1,8 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import CircularDnaScroller, { buildCircularTrack } from "./CircularDnaScroller";
+import CircularDnaScroller, { buildCircularTrack, getPositionFromCircularClientPoint } from "./CircularDnaScroller";
 
 const { gsapSet } = vi.hoisted(() => ({
   gsapSet: vi.fn()
@@ -44,7 +44,44 @@ describe("buildCircularTrack", () => {
   });
 });
 
+describe("getPositionFromCircularClientPoint", () => {
+  const bounds = {
+    width: 300,
+    height: 300,
+    left: 0,
+    top: 0
+  };
+
+  it("maps circular right-side pointer to quarter-sequence position", () => {
+    const position = getPositionFromCircularClientPoint({
+      bounds,
+      clientX: 268,
+      clientY: 150,
+      sequenceLength: 100,
+      isDragging: false
+    });
+
+    expect(position).toBe(26);
+  });
+
+  it("ignores pointer-down events away from the draggable ring", () => {
+    const position = getPositionFromCircularClientPoint({
+      bounds,
+      clientX: 150,
+      clientY: 150,
+      sequenceLength: 100,
+      isDragging: false
+    });
+
+    expect(position).toBeNull();
+  });
+});
+
 describe("CircularDnaScroller", () => {
+  beforeEach(() => {
+    gsapSet.mockClear();
+  });
+
   it("routes window horizontal wheel events to DNA movement", () => {
     render(<CircularDnaScroller sequence="ACGTACGT" annotations={[]} />);
     screen.getByLabelText("dna-track");
@@ -84,6 +121,7 @@ describe("CircularDnaScroller", () => {
     expect(circularTrack).toBeInTheDocument();
     expect(circularTrack.querySelector(".dnaCircularSelectionArc")).toBeTruthy();
   });
+
 });
 
 

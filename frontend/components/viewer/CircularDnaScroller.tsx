@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap/dist/gsap";
 import { Draggable } from "gsap/dist/Draggable";
 
@@ -20,6 +20,7 @@ const INNER_RADIUS = 112;
 const SELECTION_RADIUS = (OUTER_RADIUS + INNER_RADIUS) / 2;
 const SVG_VIEWBOX_SIZE = 300;
 const SVG_CENTER = SVG_VIEWBOX_SIZE / 2;
+const RING_TOLERANCE_FACTOR = 0.28;
 
 const normalizeSequence = (sequence: string): string => {
   const compact = sequence.replace(/\s+/g, "").toUpperCase();
@@ -49,12 +50,58 @@ export const buildCircularTrack = (sequence: string): string => {
   return expanded.repeat(3);
 };
 
+export const getPositionFromCircularClientPoint = ({
+  bounds,
+  clientX,
+  clientY,
+  sequenceLength,
+  isDragging
+}: {
+  bounds: Pick<DOMRect, "width" | "height" | "left" | "top">;
+  clientX: number;
+  clientY: number;
+  sequenceLength: number;
+  isDragging: boolean;
+}): number | null => {
+  if (!Number.isFinite(clientX) || !Number.isFinite(clientY) || sequenceLength < 1) {
+    return null;
+  }
+
+  const pointerX = clientX - bounds.left;
+  const pointerY = clientY - bounds.top;
+  const centerX = bounds.width / 2;
+  const centerY = bounds.height / 2;
+  const dx = pointerX - centerX;
+  const dy = pointerY - centerY;
+  const pointerRadius = Math.hypot(dx, dy);
+  const normalizedSelectionRadius = (SELECTION_RADIUS / SVG_VIEWBOX_SIZE) * Math.min(bounds.width, bounds.height);
+  const ringTolerance = normalizedSelectionRadius * RING_TOLERANCE_FACTOR;
+  if (!isDragging && Math.abs(pointerRadius - normalizedSelectionRadius) > ringTolerance) {
+    return null;
+  }
+
+  const angleDegrees = (Math.atan2(dy, dx) * 180) / Math.PI;
+  const adjustedDegrees = ((angleDegrees + 90) % 360 + 360) % 360;
+  const fraction = adjustedDegrees / 360;
+  if (!Number.isFinite(fraction)) {
+    return null;
+  }
+
+  const baseIndex = Math.floor(fraction * sequenceLength);
+  return baseIndex + 1;
+};
+
 export default function CircularDnaScroller({ sequence, annotations, sourceSelector }: CircularDnaScrollerProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const circularTrackRef = useRef<SVGSVGElement | null>(null);
   const currentXRef = useRef<number>(0);
+  const applyWrappedXRef = useRef<(rawX: number) => void>(() => undefined);
+  const sequenceWidthRef = useRef<number>(0);
+  const midpointRef = useRef<number>(0);
   const [currentPosition, setCurrentPosition] = useState(1);
   const [visibleBases, setVisibleBases] = useState(1);
+  const [isCircularDragging, setIsCircularDragging] = useState(false);
 
   const normalized = useMemo(() => normalizeSequence(sequence), [sequence]);
   const circularTrack = useMemo(() => buildCircularTrack(normalized), [normalized]);
@@ -90,6 +137,35 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
     [annotations, normalized.length]
   );
 
+  const positionToWrappedX = useCallback((position: number): number => {
+    const sequenceWidth = sequenceWidthRef.current;
+    const midpoint = midpointRef.current;
+    if (sequenceWidth <= 0) {
+      return midpoint;
+    }
+
+    const baseIndex = Math.max(0, Math.min(normalized.length - 1, position - 1));
+    return midpoint - baseIndex * BASE_TILE_PX;
+  }, [normalized.length]);
+
+  const updateFromCircularPointer = useCallback((target: SVGSVGElement, clientX: number, clientY: number): void => {
+    if (!(target instanceof SVGSVGElement)) {
+      return;
+    }
+
+    const nextPosition = getPositionFromCircularClientPoint({
+      bounds: target.getBoundingClientRect(),
+      clientX,
+      clientY,
+      sequenceLength: normalized.length,
+      isDragging: isCircularDragging
+    });
+    if (!nextPosition) {
+      return;
+    }
+    applyWrappedXRef.current(positionToWrappedX(nextPosition));
+  }, [isCircularDragging, normalized.length, positionToWrappedX]);
+
   useEffect(() => {
     if (!trackRef.current || !viewportRef.current) {
       return;
@@ -99,6 +175,8 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
 
     const sequenceWidth = normalized.length * BASE_TILE_PX;
     const midpoint = -sequenceWidth;
+    sequenceWidthRef.current = sequenceWidth;
+    midpointRef.current = midpoint;
 
     const clampToCircle = (rawX: number): number => {
       const offset = rawX - midpoint;
@@ -119,6 +197,7 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       gsap.set(trackRef.current, { x: wrappedX });
       updatePositionLabel(wrappedX);
     };
+    applyWrappedXRef.current = applyWrappedX;
 
     applyWrappedX(midpoint);
 
@@ -153,6 +232,33 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       draggable.kill();
     };
   }, [normalized]);
+
+  useEffect(() => {
+    if (!isCircularDragging) {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent): void => {
+      const circularTrack = circularTrackRef.current;
+      if (!circularTrack) {
+        return;
+      }
+
+      updateFromCircularPointer(circularTrack, event.clientX, event.clientY);
+    };
+
+    const handlePointerUp = (): void => {
+      setIsCircularDragging(false);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [isCircularDragging, updateFromCircularPointer]);
 
   useEffect(() => {
     if (!viewportRef.current) {
@@ -249,7 +355,19 @@ export default function CircularDnaScroller({ sequence, annotations, sourceSelec
       </div>
 
       <section className="dnaCircularPanel" aria-label="dna-circular-panel">
-        <svg className="dnaCircularTrack" aria-label="dna-circular-track" viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}>
+        <svg
+          className="dnaCircularTrack"
+          aria-label="dna-circular-track"
+          viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}
+          onPointerDown={(event) => {
+            setIsCircularDragging(true);
+            if (circularTrackRef.current) {
+              updateFromCircularPointer(circularTrackRef.current, event.clientX, event.clientY);
+            }
+          }}
+          style={{ cursor: isCircularDragging ? "grabbing" : "grab" }}
+          ref={circularTrackRef}
+        >
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={OUTER_RADIUS} />
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={INNER_RADIUS} />
 
