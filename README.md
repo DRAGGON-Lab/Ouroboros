@@ -181,15 +181,16 @@ Ouroboros/
 
 ### 1) Create and activate a Conda environment
 
+Create an isolated environment named `ouroboros` with Python 3.11.
 ```bash
 conda create -n ouroboros python=3.11 -y
-conda activate ouroboros
 ```
 
-What this does:
+Switche your shell to the `ouroboros` environment so backend dependencies install into the project-specific runtime.
 
-- `conda create -n ouroboros python=3.11 -y` creates an isolated environment named `ouroboros` with Python 3.11.
-- `conda activate ouroboros` switches your shell to that environment so backend dependencies install into the project-specific runtime.
+```bash
+conda activate ouroboros
+```
 
 ### 2) Install dependencies
 
