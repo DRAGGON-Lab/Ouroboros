@@ -252,6 +252,10 @@ Treat this file as the canonical raw genome source for ingestion/parsing steps.
 
 ### M1 (current baseline)
 
+<p align="center">
+<img src="https://github.com/DRAGGON-Lab/Ouroboros/blob/readme-update/docs/screenshot_ouroborosGUI.png" alt="Ouroboros_screenshot" width="400"/>
+</p>
+
 | Area | M1 done criteria | Current status |
 | --- | --- | --- |
 | Repo scaffolding | Frontend, backend, shared contracts, docs, data directories established | ✅ Done |
