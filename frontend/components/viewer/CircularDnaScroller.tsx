@@ -16,6 +16,7 @@ const MIN_RENDER_BASES = 240;
 const BASE_TILE_PX = 22;
 const OUTER_RADIUS = 124;
 const INNER_RADIUS = 112;
+const SELECTION_RADIUS = (OUTER_RADIUS + INNER_RADIUS) / 2;
 const SVG_VIEWBOX_SIZE = 300;
 const SVG_CENTER = SVG_VIEWBOX_SIZE / 2;
 
@@ -249,7 +250,6 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
       <p className="dnaHint">Drag DNA, or use horizontal wheel/shift+wheel anywhere in the viewer window.</p>
 
       <section className="dnaCircularPanel" aria-label="dna-circular-panel">
-        <div className="dnaCircularMarker" aria-hidden="true" />
         <svg className="dnaCircularTrack" aria-label="dna-circular-track" viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}>
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={OUTER_RADIUS} />
           <circle className="dnaCircularBaseRing" cx={SVG_CENTER} cy={SVG_CENTER} r={INNER_RADIUS} />
@@ -264,7 +264,7 @@ export default function CircularDnaScroller({ sequence, annotations }: CircularD
           ))}
 
           <path
-            d={buildSweepPath(OUTER_RADIUS, selectionStartFraction, selectionSweepDegrees)}
+            d={buildSweepPath(SELECTION_RADIUS, selectionStartFraction, selectionSweepDegrees)}
             className="dnaCircularSelectionArc"
           />
         </svg>

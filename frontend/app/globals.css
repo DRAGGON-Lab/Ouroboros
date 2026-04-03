@@ -226,21 +226,8 @@ body {
   min-height: 240px;
 }
 
-.dnaCircularMarker {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #2e90fa;
-  box-shadow: 0 0 0 4px rgba(46, 144, 250, 0.18);
-  z-index: 2;
-}
-
 .dnaCircularTrack {
-  width: min(60vw, 480px);
+  width: min(86vw, 760px);
   aspect-ratio: 1 / 1;
 }
 
@@ -259,7 +246,7 @@ body {
 .dnaCircularSelectionArc {
   fill: none;
   stroke: rgba(46, 144, 250, 0.35);
-  stroke-width: 20;
+  stroke-width: 24;
   stroke-linecap: round;
 }
 
