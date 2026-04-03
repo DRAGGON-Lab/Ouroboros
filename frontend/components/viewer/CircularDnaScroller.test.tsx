@@ -2,7 +2,7 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import CircularDnaScroller, { buildCircularTrack } from "./CircularDnaScroller";
+import CircularDnaScroller, { buildCircularTrack, getWrappedXFromCircularPoint } from "./CircularDnaScroller";
 
 const { gsapSet } = vi.hoisted(() => ({
   gsapSet: vi.fn()
@@ -41,6 +41,14 @@ describe("buildCircularTrack", () => {
 
     expect(track.length).toBeGreaterThan(0);
     expect(track.includes("A")).toBe(true);
+  });
+
+  it("maps circular drag points to wrapped x positions", () => {
+    const wrappedAtTop = getWrappedXFromCircularPoint(150, 20, { left: 0, top: 0, width: 300, height: 300 }, 176, -176);
+    const wrappedAtRight = getWrappedXFromCircularPoint(280, 150, { left: 0, top: 0, width: 300, height: 300 }, 176, -176);
+
+    expect(wrappedAtTop).toBe(-176);
+    expect(wrappedAtRight).toBeCloseTo(-220, 1);
   });
 });
 
@@ -84,6 +92,7 @@ describe("CircularDnaScroller", () => {
     expect(circularTrack).toBeInTheDocument();
     expect(circularTrack.querySelector(".dnaCircularSelectionArc")).toBeTruthy();
   });
+
 });
 
 

@@ -279,6 +279,18 @@ body {
   stroke-linecap: round;
 }
 
+.dnaCircularSelectionHandle {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 34;
+  cursor: grab;
+  pointer-events: stroke;
+}
+
+.dnaCircularSelectionHandle:active {
+  cursor: grabbing;
+}
+
 @media (max-width: 900px) {
   .homeHero {
     padding: 2rem 1.25rem;
